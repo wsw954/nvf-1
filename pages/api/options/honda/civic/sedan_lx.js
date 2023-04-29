@@ -2,7 +2,20 @@ export default {
   single: [
     {
       label: "Powertrain",
-      options: ["2.0L for Sedan LX", "1.5L Turbo 4-Cyl 180hp Engine w/CVT"],
+      options: ["2.0L 158hp CVT w/4-Cyl Engine"],
+    },
+    {
+      label: "Exterior Color",
+      options: [
+        "Aegean Blue Metallic",
+        "Crystal Pearl Black",
+        "Lunar Silver Metallic",
+        "Meteorite Gray Metallic",
+      ],
+    },
+    {
+      label: "Interior Color",
+      options: ["Black Cloth", "Gray Cloth"],
     },
   ],
   multiple: [

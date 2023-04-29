@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
+import Dropdown from "/components/dropdown.js";
+import CheckBoxGroup from "/components/checkboxgroup.js";
 
 const Bizzlle = () => {
   const [makes, setMakes] = useState([]);
@@ -43,7 +45,7 @@ const Bizzlle = () => {
 
   const handleTrimChange = async (e) => {
     setSelectedTrim(e.target.value);
-    console.log("Tets");
+
     if (e.target.value) {
       const response = await axios.get(
         `/api/vehicleOptions?make=${selectedMake}&model=${selectedModel}&trim=${e.target.value}`
@@ -115,6 +117,25 @@ const Bizzlle = () => {
               </option>
             ))}
           </select>
+        </div>
+      )}
+      {selectedTrim && (
+        <div>
+          <h3>Options</h3>
+          {options.single.map((optionGroup, index) => (
+            <Dropdown
+              key={index}
+              label={optionGroup.label}
+              options={optionGroup.options}
+            />
+          ))}
+          {options.multiple.map((optionGroup, index) => (
+            <CheckBoxGroup
+              key={index}
+              label={optionGroup.label}
+              options={optionGroup.options}
+            />
+          ))}
         </div>
       )}
     </div>
