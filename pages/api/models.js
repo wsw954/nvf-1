@@ -1,10 +1,11 @@
-const modelsByMake = {
-  Honda: ["Civic", "Accord", "CR-V", "Pilot", "Fit"],
-  Toyota: ["Corolla", "Camry", "RAV4", "Highlander", "Tacoma"],
-  Volkswagen: ["Golf", "Jetta", "Passat", "Tiguan", "Atlas"],
-  Kia: ["Forte", "Optima", "Sorento", "Sportage", "Soul"],
-  Nissan: ["Altima", "Maxima", "Rogue", "Murano", "Frontier"],
-};
+import vehicleData from "./vehicleData";
+
+const modelsByMake = vehicleData.reduce((acc, item) => {
+  const make = item.make;
+  const models = item.models;
+  acc[make] = models;
+  return acc;
+}, {});
 
 export default function handler(req, res) {
   const { make } = req.query;

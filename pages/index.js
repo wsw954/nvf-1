@@ -1,18 +1,15 @@
-// pages/index.js
 import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
 import Dropdown from "/components/dropdown.js";
 import CheckBoxGroup from "/components/checkboxgroup.js";
+import OptionsForm from "/components/OptionsForm.js";
 
-const Bizzlle = () => {
+export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
   const [selectedMake, setSelectedMake] = useState("");
-  const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState("");
-  const [trims, setTrims] = useState([]);
-  const [selectedTrim, setSelectedTrim] = useState("");
-  const [options, setOptions] = useState({ single: [], multiple: [] });
+  const [models, setModels] = useState([{ name: "", layout: "" }]);
+  const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
 
   useEffect(() => {
     const fetchMakes = async () => {
@@ -27,33 +24,18 @@ const Bizzlle = () => {
     if (e.target.value) {
       const response = await axios.get(`/api/models?make=${e.target.value}`);
       setModels(response.data);
+      setSelectedModel({ name: "", layout: "" });
     } else {
       setModels([]);
     }
   };
+
   const handleModelChange = async (e) => {
-    setSelectedModel(e.target.value);
-    if (e.target.value) {
-      const response = await axios.get(
-        `/api/trims/${selectedMake.toLowerCase()}/${e.target.value.toLowerCase()}`
-      );
-      setTrims(response.data);
-    } else {
-      setTrims([]);
-    }
-  };
-
-  const handleTrimChange = async (e) => {
-    setSelectedTrim(e.target.value);
-
-    if (e.target.value) {
-      const response = await axios.get(
-        `/api/vehicleOptions?make=${selectedMake}&model=${selectedModel}&trim=${e.target.value}`
-      );
-      setOptions(response.data);
-    } else {
-      setOptions({ single: [], multiple: [] });
-    }
+    const selectedModelName = e.target.value;
+    const selectedModelObj = models.find(
+      (model) => model.name === selectedModelName
+    );
+    setSelectedModel(selectedModelObj || { name: "", layout: "" });
   };
 
   return (
@@ -86,60 +68,25 @@ const Bizzlle = () => {
           </label>
           <select
             id="model"
-            value={selectedModel}
+            value={selectedModel.name}
             onChange={handleModelChange}
             className={styles.select}
           >
             <option value="">Select Model</option>
             {models.map((model) => (
-              <option key={model} value={model}>
-                {model}
+              <option key={model.name} value={model.name}>
+                {model.name}
               </option>
             ))}
           </select>
         </div>
       )}
-      {selectedModel && (
-        <div className={styles.inputGroup}>
-          <label htmlFor="trim" className={styles.label}>
-            Trim:
-          </label>
-          <select
-            id="trim"
-            value={selectedTrim}
-            onChange={handleTrimChange}
-            className={styles.select}
-          >
-            <option value="">Select Trim</option>
-            {trims.map((trim) => (
-              <option key={trim} value={trim}>
-                {trim}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-      {selectedTrim && (
-        <div>
-          <h3>Options</h3>
-          {options.single.map((optionGroup, index) => (
-            <Dropdown
-              key={index}
-              label={optionGroup.label}
-              options={optionGroup.options}
-            />
-          ))}
-          {options.multiple.map((optionGroup, index) => (
-            <CheckBoxGroup
-              key={index}
-              label={optionGroup.label}
-              options={optionGroup.options}
-            />
-          ))}
-        </div>
+      {selectedModel.name && (
+        <OptionsForm
+          selectedMake={selectedMake}
+          selectedModel={selectedModel}
+        />
       )}
     </div>
   );
-};
-
-export default Bizzlle;
+}
