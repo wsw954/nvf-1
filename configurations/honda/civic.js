@@ -20,6 +20,11 @@ const CivicConfigurations = [
     component: CheckBoxGroup,
     choices: ["Red", "White", "Blue"],
   },
+  {
+    categoryName: "Wheels",
+    component: CheckBoxGroup,
+    choices: ["18-Inch Gloss-Black Alloy Wheels", "17-Inch Alloy Wheels"],
+  },
 ];
 
 export default CivicConfigurations;

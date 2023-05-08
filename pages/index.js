@@ -9,6 +9,7 @@ export default function Bizzlle() {
   const [models, setModels] = useState([{ name: "", layout: "" }]);
   const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
   const [Layout, setLayout] = useState(null);
+  const [modelConfig, setModelConfig] = useState([]);
 
   useEffect(() => {
     const fetchMakes = async () => {
@@ -27,6 +28,7 @@ export default function Bizzlle() {
     } else {
       setModels([]);
     }
+    setLayout(null);
   };
 
   const handleModelChange = async (e) => {
@@ -45,10 +47,24 @@ export default function Bizzlle() {
           })),
         {
           loading: () => <div>Loading layout...</div>,
-          ssr: false, // Disable server-side rendering for the dynamic component
+          ssr: false,
         }
       );
       setLayout(() => DynamicLayout);
+
+      const kebabCaseModelName = selectedModelName
+        .replace(/([a-z])([A-Z])/g, "$1-$2")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+
+      const importedModelConfig = await import(
+        `/configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
+      ).catch(() => {
+        console.error(`Error loading configuration for ${selectedModelName}`);
+        return { default: [] };
+      });
+
+      setModelConfig(importedModelConfig.default);
     } else {
       setSelectedModel({ name: "", layout: "" });
       setLayout(null);
@@ -99,7 +115,11 @@ export default function Bizzlle() {
         </div>
       )}
       {Layout && (
-        <Layout selectedMake={selectedMake} selectedModel={selectedModel} />
+        <Layout
+          selectedMake={selectedMake}
+          selectedModel={selectedModel}
+          categoryConfigurations={modelConfig}
+        />
       )}
     </div>
   );
