@@ -8,7 +8,7 @@ export default function Layout1({ selectedMake, selectedModel }) {
     <div className={styles.container}>
       {selectedModel.name && (
         <div className={styles.inputGroup}>
-          Layout1 for: {selectedModel.name}
+          Layout2 for: {selectedModel.name}
         </div>
       )}
     </div>

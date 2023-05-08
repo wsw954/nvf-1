@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
-import Dropdown from "/components/dropdown.js";
-import CheckBoxGroup from "/components/checkboxgroup.js";
-import OptionsForm from "/components/OptionsForm.js";
+import dynamic from "next/dynamic";
 
 export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
   const [selectedMake, setSelectedMake] = useState("");
   const [models, setModels] = useState([{ name: "", layout: "" }]);
   const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
+  const [Layout, setLayout] = useState(null);
 
   useEffect(() => {
     const fetchMakes = async () => {
@@ -35,7 +34,25 @@ export default function Bizzlle() {
     const selectedModelObj = models.find(
       (model) => model.name === selectedModelName
     );
-    setSelectedModel(selectedModelObj || { name: "", layout: "" });
+
+    if (selectedModelObj) {
+      setSelectedModel(selectedModelObj);
+
+      const DynamicLayout = dynamic(
+        () =>
+          import(`/components/${selectedModelObj.layout}`).catch(() => ({
+            default: () => <div>Error loading layout</div>,
+          })),
+        {
+          loading: () => <div>Loading layout...</div>,
+          ssr: false, // Disable server-side rendering for the dynamic component
+        }
+      );
+      setLayout(() => DynamicLayout);
+    } else {
+      setSelectedModel({ name: "", layout: "" });
+      setLayout(null);
+    }
   };
 
   return (
@@ -81,11 +98,8 @@ export default function Bizzlle() {
           </select>
         </div>
       )}
-      {selectedModel.name && (
-        <OptionsForm
-          selectedMake={selectedMake}
-          selectedModel={selectedModel}
-        />
+      {Layout && (
+        <Layout selectedMake={selectedMake} selectedModel={selectedModel} />
       )}
     </div>
   );

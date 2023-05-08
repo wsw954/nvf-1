@@ -1,16 +1,14 @@
-// components/honda/CRVLayout.js
-
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const CivicLayout = ({ selectedMake, selectedModel }) => {
+const Layout1 = ({ selectedMake, selectedModel }) => {
   const [modelData, setModelData] = useState(null);
 
   useEffect(() => {
     const fetchModelData = async () => {
       if (!selectedMake || !selectedModel) return;
       const response = await axios.get(
-        `/api/data/model/${selectedMake.toLowerCase()}/${selectedModel.toLowerCase()}`
+        `/pages/api/data/${selectedMake.toLowerCase()}/${selectedModel.toLowerCase()}/layout.js`
       );
       setModelData(response.data);
     };
@@ -63,4 +61,4 @@ const CivicLayout = ({ selectedMake, selectedModel }) => {
   );
 };
 
-export default CivicLayout;
+export default Layout1;
