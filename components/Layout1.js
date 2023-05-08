@@ -2,14 +2,20 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
 
-export default function Layout1({ selectedMake, selectedModel }) {
-  console.log("Line 5 in Layout1");
+export default function Layout1({
+  selectedMake,
+  selectedModel,
+  categoryConfigurations,
+}) {
   return (
-    <div className={styles.container}>
-      {selectedModel.name && (
-        <div className={styles.inputGroup}>
-          Layout1 for: {selectedModel.name}
-        </div>
+    <div>
+      {categoryConfigurations.map(
+        ({ categoryName, component: CategoryComponent, choices }) => (
+          <div key={categoryName}>
+            <h3>{categoryName}</h3>
+            <CategoryComponent name={categoryName} choices={choices} />
+          </div>
+        )
       )}
     </div>
   );

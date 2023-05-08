@@ -1,19 +1,19 @@
 import styles from "../styles/Bizzlle.module.css";
 
-export default function CheckBoxGroup({ label, options }) {
+export default function CheckBoxGroup({ categoryName, choices }) {
   return (
     <div className={styles.optionsCheckBoxGroup}>
-      <label className={styles.optionsCheckBoxGroupLabel}>{label}</label>
+      <label className={styles.optionsCheckBoxGroupLabel}>{categoryName}</label>
       <div className={styles.checkBoxContainer}>
-        {options.map((option, index) => (
+        {choices.map((option, index) => (
           <div key={index} className={styles.checkBoxItem}>
             <input
               type="checkbox"
-              id={`${label}-${index}`}
-              name={label}
+              id={`${option}-${index}`}
+              name={option}
               value={option}
             />
-            <label htmlFor={`${label}-${index}`}>{option}</label>
+            <label htmlFor={`${option}-${index}`}>{option}</label>
           </div>
         ))}
       </div>
