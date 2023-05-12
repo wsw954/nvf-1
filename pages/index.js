@@ -7,9 +7,8 @@ export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
   const [selectedMake, setSelectedMake] = useState("");
   const [models, setModels] = useState([{ name: "", layout: "" }]);
-  const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
+  const [selectedModel, setSelectedModel] = useState("");
   const [Layout, setLayout] = useState(null);
-  const [modelConfig, setModelConfig] = useState([]);
 
   useEffect(() => {
     const fetchMakes = async () => {
@@ -19,15 +18,23 @@ export default function Bizzlle() {
     fetchMakes();
   }, []);
 
-  const handleMakeChange = async (e) => {
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (selectedMake) {
+        const response = await axios.get(`/api/models?make=${selectedMake}`);
+        setModels(response.data);
+      } else {
+        setModels([]);
+      }
+    };
+    setSelectedModel("");
+    setLayout(null);
+    fetchModels();
+  }, [selectedMake]);
+
+  const handleMakeChange = (e) => {
     setSelectedMake(e.target.value);
-    if (e.target.value) {
-      const response = await axios.get(`/api/models?make=${e.target.value}`);
-      setModels(response.data);
-      setSelectedModel({ name: "", layout: "" });
-    } else {
-      setModels([]);
-    }
+    setSelectedModel("");
     setLayout(null);
   };
 
@@ -38,7 +45,7 @@ export default function Bizzlle() {
     );
 
     if (selectedModelObj) {
-      setSelectedModel(selectedModelObj);
+      setSelectedModel(selectedModelObj.name);
 
       const DynamicLayout = dynamic(
         () =>
@@ -50,23 +57,10 @@ export default function Bizzlle() {
           ssr: false,
         }
       );
+
       setLayout(() => DynamicLayout);
-
-      const kebabCaseModelName = selectedModelName
-        .replace(/([a-z])([A-Z])/g, "$1-$2")
-        .replace(/\s+/g, "-")
-        .toLowerCase();
-
-      const importedModelConfig = await import(
-        `/configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
-      ).catch(() => {
-        console.error(`Error loading configuration for ${selectedModelName}`);
-        return { default: [] };
-      });
-
-      setModelConfig(importedModelConfig.default);
     } else {
-      setSelectedModel({ name: "", layout: "" });
+      setSelectedModel("");
       setLayout(null);
     }
   };
@@ -101,7 +95,7 @@ export default function Bizzlle() {
           </label>
           <select
             id="model"
-            value={selectedModel.name}
+            value={selectedModel}
             onChange={handleModelChange}
             className={styles.select}
           >
@@ -115,11 +109,7 @@ export default function Bizzlle() {
         </div>
       )}
       {Layout && (
-        <Layout
-          selectedMake={selectedMake}
-          selectedModel={selectedModel}
-          categoryConfigurations={modelConfig}
-        />
+        <Layout selectedMake={selectedMake} selectedModel={selectedModel} />
       )}
     </div>
   );
