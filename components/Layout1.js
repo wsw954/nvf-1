@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
 
 export default function Layout1({ selectedMake, selectedModel }) {
   const [configuration, setConfiguration] = useState(null);
+  // const [selectedChoice, setSelectedChoice] = useState("");
 
   useEffect(() => {
     if (selectedMake && selectedModel) {
@@ -17,7 +16,12 @@ export default function Layout1({ selectedMake, selectedModel }) {
       ).then((config) => setConfiguration(config.default));
     }
   }, [selectedMake, selectedModel]);
-  console.log(configuration);
+
+  const handleSelectChange = (event) => {
+    // setSelectedChoice(event.target.value);
+    console.log("Line 23 in Layout, handleSelectChange");
+    console.log(event);
+  };
 
   return (
     <div>
@@ -26,7 +30,11 @@ export default function Layout1({ selectedMake, selectedModel }) {
           ({ categoryName, component: CategoryComponent, choices }) => (
             <div key={categoryName}>
               <h3>{categoryName}</h3>
-              <CategoryComponent name={categoryName} choices={choices} />
+              <CategoryComponent
+                categoryName={categoryName}
+                choices={choices}
+                onSelectChange={handleSelectChange}
+              />
             </div>
           )
         )}
