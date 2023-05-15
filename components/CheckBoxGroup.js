@@ -4,7 +4,7 @@ import styles from "../styles/Bizzlle.module.css";
 export default function CheckBoxGroup({ categoryName, choices }) {
   const [selectedChoices, setSelectedChoices] = useState([]);
 
-  const handleCheckboxChange = (event) => {
+  const handleCheckBoxChange = (event) => {
     if (event.target.checked) {
       setSelectedChoices([...selectedChoices, event.target.value]);
     } else {
@@ -25,7 +25,7 @@ export default function CheckBoxGroup({ categoryName, choices }) {
               id={`${option.name}`}
               name={option.name}
               value={option.name}
-              onChange={handleCheckboxChange}
+              onChange={handleCheckBoxChange}
               checked={selectedChoices.includes(option.name)}
             />
             <label htmlFor={`${option.name}-${index}`}>

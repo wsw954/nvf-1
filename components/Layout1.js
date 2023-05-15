@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import styles from "../styles/Bizzlle.module.css";
+import AppContext from "/state/AppContext";
 
 export default function Layout1({ selectedMake, selectedModel }) {
   const [configuration, setConfiguration] = useState(null);
-  // const [selectedChoice, setSelectedChoice] = useState("");
+  const { state, dispatch } = useContext(AppContext);
 
   useEffect(() => {
     if (selectedMake && selectedModel) {
@@ -17,10 +18,11 @@ export default function Layout1({ selectedMake, selectedModel }) {
     }
   }, [selectedMake, selectedModel]);
 
-  const handleSelectChange = (event) => {
-    // setSelectedChoice(event.target.value);
-    console.log("Line 23 in Layout, handleSelectChange");
-    console.log(event);
+  const handleSelectChange = (choice) => {
+    dispatch({
+      type: "SELECT_CHOICE",
+      payload: { choice: choice },
+    });
   };
 
   return (

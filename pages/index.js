@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
 import dynamic from "next/dynamic";
 import Dropdown from "/components/Dropdown";
+import AppContext from "/state/AppContext";
 
 export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
-  const [selectedMake, setSelectedMake] = useState("");
+  const { state, dispatch } = useContext(AppContext);
   const [models, setModels] = useState([{ name: "", layout: "" }]);
-  const [selectedModel, setSelectedModel] = useState("");
   const [Layout, setLayout] = useState(null);
 
   useEffect(() => {
@@ -23,32 +23,40 @@ export default function Bizzlle() {
     fetchMakes();
   }, []);
 
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        if (selectedMake) {
-          const response = await axios.get(`/api/models?make=${selectedMake}`);
-          setModels(response.data);
-        } else {
-          setModels([]);
-        }
-      } catch (error) {
-        console.error("An error occurred while fetching the models:", error);
+  async function handleMakeChange(choice) {
+    try {
+      if (!choice) {
+        throw new Error("Invalid choice selected");
       }
-    };
-    setSelectedModel("");
-    setLayout(null);
-    fetchModels();
-  }, [selectedMake]);
+      dispatch({
+        type: "MAKE_SELECTED",
+        payload: { make: choice },
+      });
+      const response = await axios.get(`/api/models?make=${choice}`);
+      if (response.status !== 200) {
+        throw new Error("Failed to fetch models");
+      }
+      setModels(response.data);
+      setLayout(null);
+    } catch (error) {
+      console.error(error);
+      // handle the error here, e.g., show an error message to the user
+    }
+  }
 
-  const handleModelChange = async (selectedModelName) => {
-    const selectedModelObj = models.find(
-      (model) => model.name === selectedModelName
-    );
-
-    if (selectedModelObj) {
-      setSelectedModel(selectedModelObj.name);
-
+  function handleModelChange(choice) {
+    try {
+      if (!choice) {
+        throw new Error("Invalid choice selected");
+      }
+      dispatch({
+        type: "MODEL_SELECTED",
+        payload: { model: choice },
+      });
+      const selectedModelObj = models.find((model) => model.name === choice);
+      if (!selectedModelObj) {
+        throw new Error("Failed to find selected model");
+      }
       const DynamicLayout = dynamic(
         () =>
           import(`/components/${selectedModelObj.layout}`).catch(() => ({
@@ -59,13 +67,12 @@ export default function Bizzlle() {
           ssr: false,
         }
       );
-
       setLayout(() => DynamicLayout);
-    } else {
-      setSelectedModel("");
-      setLayout(null);
+    } catch (error) {
+      console.error(error);
+      // handle the error here, e.g., show an error message to the user
     }
-  };
+  }
 
   return (
     <div className={styles.container}>
@@ -74,14 +81,10 @@ export default function Bizzlle() {
         <Dropdown
           categoryName="Make"
           choices={makes.map((make) => ({ name: make }))}
-          onSelectChange={(value) => {
-            setSelectedMake(value);
-            setSelectedModel("");
-            setLayout(null);
-          }}
+          onSelectChange={handleMakeChange}
         />
       </div>
-      {selectedMake && (
+      {state.selectedMake && (
         <Dropdown
           categoryName="Model"
           choices={models}
@@ -89,7 +92,10 @@ export default function Bizzlle() {
         />
       )}
       {Layout && (
-        <Layout selectedMake={selectedMake} selectedModel={selectedModel} />
+        <Layout
+          selectedMake={state.selectedMake}
+          selectedModel={state.selectedModel}
+        />
       )}
     </div>
   );
