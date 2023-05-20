@@ -35,11 +35,13 @@ function reducer(state, action) {
         choices: [],
       };
     case ACTIONS.SELECT_CHOICE:
+      console.log("Dropdown selected");
       return {
         ...state,
         choices: [action.payload.choice],
       };
     case ACTIONS.CHECKBOX_CHOICE:
+      console.log("Checkbox selected");
       return {
         ...state,
         choices: [action.payload.choice],

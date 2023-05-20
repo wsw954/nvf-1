@@ -1,13 +1,15 @@
 import { useState } from "react";
 import styles from "../styles/Bizzlle.module.css";
 
-export default function Dropdown({ categoryName, choices, onSelectChange }) {
-  const [selectedChoice, setSelectedChoice] = useState("");
-
-  const handleSelectChange = (event) => {
-    setSelectedChoice(event.target.value);
-    if (onSelectChange) {
-      onSelectChange(event.target.value);
+export default function Dropdown({
+  categoryName,
+  choices,
+  onChange,
+  selectedChoice,
+}) {
+  const handleChange = (event) => {
+    if (onChange) {
+      onChange(event.target.value);
     }
   };
 
@@ -26,8 +28,8 @@ export default function Dropdown({ categoryName, choices, onSelectChange }) {
       <select
         id={`dropdown-${categoryName}`}
         className={styles.optionsDropdownSelect}
+        onChange={handleChange}
         value={selectedChoice}
-        onChange={handleSelectChange}
       >
         <option value="">Select {categoryName}</option>
         {choices.map((option, index) => (

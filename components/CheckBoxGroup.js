@@ -1,17 +1,12 @@
 import { useState } from "react";
 import styles from "../styles/Bizzlle.module.css";
 
-export default function CheckBoxGroup({ categoryName, choices }) {
+export default function CheckBoxGroup({ categoryName, choices, onChange }) {
   const [selectedChoices, setSelectedChoices] = useState([]);
+  // const { state, dispatch } = useContext(AppContext);
 
   const handleCheckBoxChange = (event) => {
-    if (event.target.checked) {
-      setSelectedChoices([...selectedChoices, event.target.value]);
-    } else {
-      setSelectedChoices(
-        selectedChoices.filter((choice) => choice !== event.target.value)
-      );
-    }
+    onChange();
   };
 
   return (

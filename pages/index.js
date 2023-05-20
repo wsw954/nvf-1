@@ -1,77 +1,62 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../styles/Bizzlle.module.css";
 import dynamic from "next/dynamic";
 import Dropdown from "/components/Dropdown";
-import AppContext from "/state/AppContext";
 
 export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
-  const { state, dispatch } = useContext(AppContext);
+  const [selectedMake, setSelectedMake] = useState("");
   const [models, setModels] = useState([{ name: "", layout: "" }]);
+  const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
   const [Layout, setLayout] = useState(null);
+  const [error, setError] = useState(null);
+
+  const fetchData = async (url, setter) => {
+    try {
+      const response = await axios.get(url);
+      setter(response.data);
+    } catch (error) {
+      console.error(
+        `An error occurred while fetching the data from url: ${url}`,
+        error
+      );
+      setError("An error occurred. Please try again later.");
+    }
+  };
 
   useEffect(() => {
-    const fetchMakes = async () => {
-      try {
-        const response = await axios.get("/api/makes");
-        setMakes(response.data);
-      } catch (error) {
-        console.error("An error occurred while fetching the makes:", error);
-      }
-    };
-    fetchMakes();
+    fetchData("/api/makes", setMakes);
   }, []);
 
-  async function handleMakeChange(choice) {
-    try {
-      if (!choice) {
-        throw new Error("Invalid choice selected");
-      }
-      dispatch({
-        type: "MAKE_SELECTED",
-        payload: { make: choice },
-      });
-      const response = await axios.get(`/api/models?make=${choice}`);
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch models");
-      }
-      setModels(response.data);
-      setLayout(null);
-    } catch (error) {
-      console.error(error);
-      // handle the error here, e.g., show an error message to the user
-    }
-  }
+  useEffect(() => {
+    setSelectedModel({ name: "", layout: "" });
+    setLayout(null);
+  }, [selectedMake]);
+
+  const handleMakeChange = async (choice) => {
+    setSelectedMake(choice);
+    fetchData(`/api/models?make=${choice}`, setModels);
+  };
 
   function handleModelChange(choice) {
-    try {
-      if (!choice) {
-        throw new Error("Invalid choice selected");
+    const selectedModelObj = models.find((model) => model.name === choice);
+    setSelectedModel(selectedModelObj);
+    const DynamicLayout = dynamic(
+      () =>
+        import(`/components/${selectedModelObj.layout}`).catch(() => ({
+          default: () => <div>Error loading layout</div>,
+        })),
+      {
+        loading: () => <div>Loading layout...</div>,
+        ssr: false,
       }
-      dispatch({
-        type: "MODEL_SELECTED",
-        payload: { model: choice },
-      });
-      const selectedModelObj = models.find((model) => model.name === choice);
-      if (!selectedModelObj) {
-        throw new Error("Failed to find selected model");
-      }
-      const DynamicLayout = dynamic(
-        () =>
-          import(`/components/${selectedModelObj.layout}`).catch(() => ({
-            default: () => <div>Error loading layout</div>,
-          })),
-        {
-          loading: () => <div>Loading layout...</div>,
-          ssr: false,
-        }
-      );
-      setLayout(() => DynamicLayout);
-    } catch (error) {
-      console.error(error);
-      // handle the error here, e.g., show an error message to the user
-    }
+    );
+    setLayout(() => DynamicLayout);
+  }
+
+  if (error) {
+    return <div>{error}</div>;
   }
 
   return (
@@ -81,20 +66,22 @@ export default function Bizzlle() {
         <Dropdown
           categoryName="Make"
           choices={makes.map((make) => ({ name: make }))}
-          onSelectChange={handleMakeChange}
+          onChange={handleMakeChange}
+          selectedChoice={selectedMake}
         />
       </div>
-      {state.selectedMake && (
+      {selectedMake && (
         <Dropdown
           categoryName="Model"
           choices={models}
-          onSelectChange={handleModelChange}
+          onChange={handleModelChange}
+          selectedChoice={selectedModel.name}
         />
       )}
       {Layout && (
         <Layout
-          selectedMake={state.selectedMake}
-          selectedModel={state.selectedModel}
+          selectedMake={selectedMake}
+          selectedModel={selectedModel.name}
         />
       )}
     </div>

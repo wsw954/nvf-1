@@ -2,14 +2,13 @@ Folder PATH listing for volume Data
 Volume serial number is B2E5-07B8
 D:.
 
-   
+
 +---components
 |       CheckBoxGroup.js
 |       Dropdown.js
 |       Layout1.js
 |       Layout2.js
 |       Layout3.js
-|       OptionsForm.js
 |       
 +---configurations
 |   +---ford
@@ -36,9 +35,11 @@ D:.
 |       favicon.ico
 |       vercel.svg
 |       
++---state
+|       AppContext.js
+|       reducer.js
+|       
 +---styles
 |       Bizzlle.module.css
 |       globals.css
-|       Home.module.css
-|       
-
+|       Home.module.css 
