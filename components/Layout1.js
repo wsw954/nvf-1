@@ -3,34 +3,41 @@ import styles from "../styles/Bizzlle.module.css";
 import AppContext from "/state/AppContext";
 
 export default function Layout1({ selectedMake, selectedModel }) {
-  console.log("Line 6 in Layout");
-  console.log(selectedModel);
-  // const [configuration, setConfiguration] = useState(null);
+  const [configuration, setConfiguration] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
   // const { state, dispatch } = useContext(AppContext);
 
-  // useEffect(() => {
-  //   if (selectedMake && selectedModel) {
-  //     const kebabCaseModelName = selectedModel.name
-  //       .replace(/([a-z])([A-Z])/g, "$1-$2")
-  //       .replace(/\s+/g, "-")
-  //       .toLowerCase();
-  //     import(
-  //       `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
-  //     ).then((config) => setConfiguration(config.default));
-  //   }
-  // }, [selectedMake, selectedModel]);
+  useEffect(() => {
+    if (selectedMake && selectedModel) {
+      const kebabCaseModelName = selectedModel
+        .replace(/([a-z])([A-Z])/g, "$1-$2")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+      import(
+        `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
+      ).then((config) => {
+        setConfiguration(config.default);
+        // Initialize selected options for each category with null
+        const initialSelectedOptions = config.default.reduce((acc, current) => {
+          acc[current.categoryName] = null;
+          return acc;
+        }, {});
+        setSelectedOptions(initialSelectedOptions);
+      });
+    }
+  }, [selectedMake, selectedModel]);
 
-  // const handleChange = (choice) => {
-  //   dispatch({
-  //     type: "SELECT_CHOICE",
-  //     payload: { choice: choice },
-  //   });
-  // };
+  const handleChange = (categoryName, selectedOptions) => {
+    setSelectedOptions((prevOptions) => ({
+      ...prevOptions,
+      [categoryName]: selectedOptions,
+    }));
+  };
 
   return (
     <div>
       Layout1
-      {/* {configuration &&
+      {configuration &&
         configuration.map(
           ({ categoryName, component: CategoryComponent, choices }) => {
             return (
@@ -39,12 +46,15 @@ export default function Layout1({ selectedMake, selectedModel }) {
                 <CategoryComponent
                   categoryName={categoryName}
                   choices={choices}
-                  onChange={handleChange}
+                  onChange={(selectedOptions) =>
+                    handleChange(categoryName, selectedOptions)
+                  }
+                  selectedOptions={selectedOptions[categoryName] || []}
                 />
               </div>
             );
           }
-        )} */}
+        )}
     </div>
   );
 }

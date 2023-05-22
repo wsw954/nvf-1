@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import styles from "../styles/Bizzlle.module.css";
+import AppContext from "/state/AppContext";
 
-export default function Layout1({ selectedMake, selectedModel }) {
+export default function Layout2({ selectedMake, selectedModel }) {
   const [configuration, setConfiguration] = useState(null);
-  // const [selectedChoice, setSelectedChoice] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState({});
+  // const { state, dispatch } = useContext(AppContext);
 
   useEffect(() => {
     if (selectedMake && selectedModel) {
@@ -13,30 +15,45 @@ export default function Layout1({ selectedMake, selectedModel }) {
         .toLowerCase();
       import(
         `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
-      ).then((config) => setConfiguration(config.default));
+      ).then((config) => {
+        setConfiguration(config.default);
+        // Initialize selected options for each category with null
+        const initialSelectedOptions = config.default.reduce((acc, current) => {
+          acc[current.categoryName] = null;
+          return acc;
+        }, {});
+        setSelectedOptions(initialSelectedOptions);
+      });
     }
   }, [selectedMake, selectedModel]);
 
-  const handleSelectChange = (event) => {
-    // setSelectedChoice(event.target.value);
-    console.log("Line 23 in Layout, handleSelectChange");
-    console.log(event);
+  const handleChange = (categoryName, selectedOptions) => {
+    setSelectedOptions((prevOptions) => ({
+      ...prevOptions,
+      [categoryName]: selectedOptions,
+    }));
   };
 
   return (
     <div>
+      Layout2
       {configuration &&
         configuration.map(
-          ({ categoryName, component: CategoryComponent, choices }) => (
-            <div key={categoryName}>
-              <h3>{categoryName}</h3>
-              <CategoryComponent
-                categoryName={categoryName}
-                choices={choices}
-                onSelectChange={handleSelectChange}
-              />
-            </div>
-          )
+          ({ categoryName, component: CategoryComponent, choices }) => {
+            return (
+              <div key={categoryName}>
+                <h3>{categoryName}</h3>
+                <CategoryComponent
+                  categoryName={categoryName}
+                  choices={choices}
+                  onChange={(selectedOptions) =>
+                    handleChange(categoryName, selectedOptions)
+                  }
+                  selectedOptions={selectedOptions[categoryName] || []}
+                />
+              </div>
+            );
+          }
         )}
     </div>
   );

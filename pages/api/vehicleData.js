@@ -2,8 +2,8 @@ const data = [
   {
     make: "Ford",
     models: [
-      { name: "F-150", layout: "Layout1" },
-      { name: "Mustang", layout: "Layout1" },
+      { name: "F-150", layout: "Layout2" },
+      { name: "Mustang", layout: "Layout2" },
     ],
   },
   {

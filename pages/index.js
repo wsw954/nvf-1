@@ -36,11 +36,25 @@ export default function Bizzlle() {
 
   const handleMakeChange = async (choice) => {
     setSelectedMake(choice);
+    setSelectedModel({ name: "", layout: "" });
+    setLayout(null);
     fetchData(`/api/models?make=${choice}`, setModels);
   };
 
   function handleModelChange(choice) {
+    if (!choice || choice === "") {
+      setSelectedModel({ name: "", layout: "" });
+      setLayout(null);
+      return;
+    }
     const selectedModelObj = models.find((model) => model.name === choice);
+
+    if (!selectedModelObj) {
+      setSelectedModel({ name: "", layout: "" });
+      setLayout(null);
+      return;
+    }
+
     setSelectedModel(selectedModelObj);
     const DynamicLayout = dynamic(
       () =>

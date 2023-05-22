@@ -1,12 +1,22 @@
 import { useState } from "react";
 import styles from "../styles/Bizzlle.module.css";
 
-export default function CheckBoxGroup({ categoryName, choices, onChange }) {
-  const [selectedChoices, setSelectedChoices] = useState([]);
-  // const { state, dispatch } = useContext(AppContext);
-
+export default function CheckBoxGroup({
+  categoryName,
+  choices,
+  onChange,
+  selectedOptions,
+}) {
   const handleCheckBoxChange = (event) => {
-    onChange();
+    if (event.target.checked) {
+      // add the selected option to the array of selected options
+      onChange([...selectedOptions, event.target.value]);
+    } else {
+      // remove the unselected option from the array of selected options
+      onChange(
+        selectedOptions.filter((option) => option !== event.target.value)
+      );
+    }
   };
 
   return (
@@ -21,7 +31,7 @@ export default function CheckBoxGroup({ categoryName, choices, onChange }) {
               name={option.name}
               value={option.name}
               onChange={handleCheckBoxChange}
-              checked={selectedChoices.includes(option.name)}
+              checked={selectedOptions.includes(option.name)}
             />
             <label htmlFor={`${option.name}-${index}`}>
               {option.name + "- $" + option.price}
