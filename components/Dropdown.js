@@ -5,17 +5,29 @@ export default function Dropdown({
   categoryName,
   choices,
   onChange,
-  selectedChoice,
+  selectedOptions,
 }) {
   const handleChange = (event) => {
+    const selectedName = event.target.value;
+    const selectedOption = choices.find(
+      (option) => option.name === selectedName
+    );
+
     if (onChange) {
-      onChange(event.target.value);
+      onChange(selectedOption);
     }
   };
 
   const displayPrice =
     categoryName.toLowerCase() !== "make" &&
     categoryName.toLowerCase() !== "model";
+
+  let selectedValue = "";
+  if (Array.isArray(selectedOptions)) {
+    selectedValue = selectedOptions[0]?.name || "";
+  } else {
+    selectedValue = selectedOptions.name || "";
+  }
 
   return (
     <div className={styles.optionsDropdownInputGroup}>
@@ -29,7 +41,7 @@ export default function Dropdown({
         id={`dropdown-${categoryName}`}
         className={styles.optionsDropdownSelect}
         onChange={handleChange}
-        value={selectedChoice}
+        value={selectedValue}
       >
         <option value="">Select {categoryName}</option>
         {choices.map((option, index) => (

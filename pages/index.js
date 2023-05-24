@@ -34,20 +34,22 @@ export default function Bizzlle() {
     setLayout(null);
   }, [selectedMake]);
 
-  const handleMakeChange = async (choice) => {
-    setSelectedMake(choice);
+  const handleMakeChange = async (selectedOption) => {
+    setSelectedMake(selectedOption.name);
     setSelectedModel({ name: "", layout: "" });
     setLayout(null);
-    fetchData(`/api/models?make=${choice}`, setModels);
+    fetchData(`/api/models?make=${selectedOption.name}`, setModels);
   };
 
-  function handleModelChange(choice) {
-    if (!choice || choice === "") {
+  function handleModelChange(selectedOption) {
+    if (!selectedOption || selectedOption.name === "") {
       setSelectedModel({ name: "", layout: "" });
       setLayout(null);
       return;
     }
-    const selectedModelObj = models.find((model) => model.name === choice);
+    const selectedModelObj = models.find(
+      (model) => model.name === selectedOption.name
+    );
 
     if (!selectedModelObj) {
       setSelectedModel({ name: "", layout: "" });
@@ -81,7 +83,7 @@ export default function Bizzlle() {
           categoryName="Make"
           choices={makes.map((make) => ({ name: make }))}
           onChange={handleMakeChange}
-          selectedChoice={selectedMake}
+          selectedOptions={{ name: selectedMake }}
         />
       </div>
       {selectedMake && (
@@ -89,7 +91,7 @@ export default function Bizzlle() {
           categoryName="Model"
           choices={models}
           onChange={handleModelChange}
-          selectedChoice={selectedModel.name}
+          selectedOptions={{ name: selectedModel.name }}
         />
       )}
       {Layout && (
