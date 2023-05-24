@@ -1,11 +1,9 @@
-import { useState, useEffect, useContext } from "react";
-import styles from "../styles/Bizzlle.module.css";
-import AppContext from "/state/AppContext";
+import { useState, useEffect } from "react";
 
 export default function Layout2({ selectedMake, selectedModel }) {
   const [configuration, setConfiguration] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
-  // const { state, dispatch } = useContext(AppContext);
+  const [showNextCategory, setShowNextCategory] = useState(false);
 
   useEffect(() => {
     if (selectedMake && selectedModel) {
@@ -17,9 +15,8 @@ export default function Layout2({ selectedMake, selectedModel }) {
         `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
       ).then((config) => {
         setConfiguration(config.default);
-        // Initialize selected options for each category with null
         const initialSelectedOptions = config.default.reduce((acc, current) => {
-          acc[current.categoryName] = null;
+          acc[current.categoryName] = [];
           return acc;
         }, {});
         setSelectedOptions(initialSelectedOptions);
@@ -27,32 +24,41 @@ export default function Layout2({ selectedMake, selectedModel }) {
     }
   }, [selectedMake, selectedModel]);
 
-  const handleChange = (categoryName, selectedOptions) => {
+  const handleChange = (categoryName, updatedSelection) => {
     setSelectedOptions((prevOptions) => ({
       ...prevOptions,
-      [categoryName]: selectedOptions,
+      [categoryName]: Array.isArray(updatedSelection)
+        ? [...updatedSelection]
+        : [updatedSelection],
     }));
+
+    if (configuration[0].categoryName === categoryName) {
+      setShowNextCategory(true);
+    }
   };
 
   return (
     <div>
-      Layout2
+      Layout1B
       {configuration &&
         configuration.map(
-          ({ categoryName, component: CategoryComponent, choices }) => {
-            return (
-              <div key={categoryName}>
-                <h3>{categoryName}</h3>
-                <CategoryComponent
-                  categoryName={categoryName}
-                  choices={choices}
-                  onChange={(selectedOptions) =>
-                    handleChange(categoryName, selectedOptions)
-                  }
-                  selectedOptions={selectedOptions[categoryName] || []}
-                />
-              </div>
-            );
+          ({ categoryName, component: CategoryComponent, choices }, index) => {
+            // Render only first dropdown initially, then according to showNextCategory flag
+            if (index === 0 || showNextCategory) {
+              return (
+                <div key={categoryName}>
+                  <CategoryComponent
+                    categoryName={categoryName}
+                    choices={choices}
+                    onChange={(selectedOption) =>
+                      handleChange(categoryName, selectedOption)
+                    }
+                    selectedOptions={selectedOptions[categoryName] || []}
+                  />
+                </div>
+              );
+            }
+            return null;
           }
         )}
     </div>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import styles from "../styles/Bizzlle.module.css";
 
 export default function CheckBoxGroup({
@@ -8,13 +7,16 @@ export default function CheckBoxGroup({
   selectedOptions,
 }) {
   const handleCheckBoxChange = (event) => {
+    const option = choices.find((choice) => choice.name === event.target.value);
     if (event.target.checked) {
       // add the selected option to the array of selected options
-      onChange([...selectedOptions, event.target.value]);
+      onChange([...selectedOptions, option]);
     } else {
       // remove the unselected option from the array of selected options
-      onChange(
-        selectedOptions.filter((option) => option !== event.target.value)
+      onChange((prevSelectedOptions) =>
+        prevSelectedOptions.filter(
+          (prevOption) => prevOption.name !== option.name
+        )
       );
     }
   };
@@ -31,7 +33,13 @@ export default function CheckBoxGroup({
               name={option.name}
               value={option.name}
               onChange={handleCheckBoxChange}
-              checked={selectedOptions.includes(option.name)}
+              checked={
+                selectedOptions
+                  ? selectedOptions.some(
+                      (selectedOption) => selectedOption.name === option.name
+                    )
+                  : false
+              }
             />
             <label htmlFor={`${option.name}-${index}`}>
               {option.name + "- $" + option.price}
