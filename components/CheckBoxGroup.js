@@ -7,17 +7,17 @@ export default function CheckBoxGroup({
   selectedOptions,
 }) {
   const handleCheckBoxChange = (event) => {
+    console.log(selectedOptions);
     const option = choices.find((choice) => choice.name === event.target.value);
     if (event.target.checked) {
       // add the selected option to the array of selected options
-      onChange([...selectedOptions, option]);
+      onChange(categoryName, [...selectedOptions, option]);
     } else {
       // remove the unselected option from the array of selected options
-      onChange((prevSelectedOptions) =>
-        prevSelectedOptions.filter(
-          (prevOption) => prevOption.name !== option.name
-        )
+      const newSelectedOptions = selectedOptions.filter(
+        (prevOption) => prevOption.name !== option.name
       );
+      onChange(categoryName, newSelectedOptions);
     }
   };
 
@@ -33,13 +33,9 @@ export default function CheckBoxGroup({
               name={option.name}
               value={option.name}
               onChange={handleCheckBoxChange}
-              checked={
-                selectedOptions
-                  ? selectedOptions.some(
-                      (selectedOption) => selectedOption.name === option.name
-                    )
-                  : false
-              }
+              checked={selectedOptions.some(
+                (selectedOption) => selectedOption.name === option.name
+              )}
             />
             <label htmlFor={`${option.name}-${index}`}>
               {option.name + "- $" + option.price}

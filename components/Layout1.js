@@ -11,25 +11,34 @@ export default function Layout1({ selectedMake, selectedModel }) {
         .replace(/([a-z])([A-Z])/g, "$1-$2")
         .replace(/\s+/g, "-")
         .toLowerCase();
+
       import(
         `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
-      ).then((config) => {
-        setConfiguration(config.default);
-        const initialSelectedOptions = config.default.reduce((acc, current) => {
-          acc[current.categoryName] = [];
-          return acc;
-        }, {});
-        setSelectedOptions(initialSelectedOptions);
-      });
+      )
+        .then((config) => {
+          setConfiguration(config.default);
+          const initialSelectedOptions = config.default.reduce(
+            (acc, current) => {
+              acc[current.categoryName] = [];
+              return acc;
+            },
+            {}
+          );
+          setSelectedOptions(initialSelectedOptions);
+        })
+        .catch((error) => {
+          console.error(
+            `Error loading configuration for ${selectedMake} ${selectedModel}: `,
+            error
+          );
+        });
     }
   }, [selectedMake, selectedModel]);
 
-  const handleChange = (categoryName, updatedSelection) => {
+  const handleChange = (categoryName, selectedOption) => {
     setSelectedOptions((prevOptions) => ({
       ...prevOptions,
-      [categoryName]: Array.isArray(updatedSelection)
-        ? [...updatedSelection]
-        : [updatedSelection],
+      [categoryName]: selectedOption,
     }));
 
     if (configuration[0].categoryName === categoryName) {
@@ -50,8 +59,8 @@ export default function Layout1({ selectedMake, selectedModel }) {
                   <CategoryComponent
                     categoryName={categoryName}
                     choices={choices}
-                    onChange={(selectedOption) =>
-                      handleChange(categoryName, selectedOption)
+                    onChange={(categoryName, [selectedOption]) =>
+                      handleChange(categoryName, [selectedOption])
                     }
                     selectedOptions={selectedOptions[categoryName] || []}
                   />

@@ -7,7 +7,7 @@ import Dropdown from "/components/Dropdown";
 export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
   const [selectedMake, setSelectedMake] = useState("");
-  const [models, setModels] = useState([{ name: "", layout: "" }]);
+  const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
   const [Layout, setLayout] = useState(null);
   const [error, setError] = useState(null);
@@ -34,14 +34,16 @@ export default function Bizzlle() {
     setLayout(null);
   }, [selectedMake]);
 
-  const handleMakeChange = async (selectedOption) => {
+  const handleMakeChange = async (categoryName, selectedOptions) => {
+    const selectedOption = selectedOptions[0];
     setSelectedMake(selectedOption.name);
     setSelectedModel({ name: "", layout: "" });
     setLayout(null);
     fetchData(`/api/models?make=${selectedOption.name}`, setModels);
   };
 
-  function handleModelChange(selectedOption) {
+  function handleModelChange(categoryName, selectedOptions) {
+    const selectedOption = selectedOptions[0];
     if (!selectedOption || selectedOption.name === "") {
       setSelectedModel({ name: "", layout: "" });
       setLayout(null);
@@ -83,7 +85,7 @@ export default function Bizzlle() {
           categoryName="Make"
           choices={makes.map((make) => ({ name: make }))}
           onChange={handleMakeChange}
-          selectedOptions={{ name: selectedMake }}
+          selectedOptions={[{ name: selectedMake }]}
         />
       </div>
       {selectedMake && (
@@ -91,7 +93,7 @@ export default function Bizzlle() {
           categoryName="Model"
           choices={models}
           onChange={handleModelChange}
-          selectedOptions={{ name: selectedModel.name }}
+          selectedOptions={[{ name: selectedModel.name }]}
         />
       )}
       {Layout && (

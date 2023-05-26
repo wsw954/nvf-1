@@ -39,7 +39,7 @@ export default function Layout2({ selectedMake, selectedModel }) {
 
   return (
     <div>
-      Layout1B
+      Layout2
       {configuration &&
         configuration.map(
           ({ categoryName, component: CategoryComponent, choices }, index) => {
