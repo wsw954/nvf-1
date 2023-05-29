@@ -7,14 +7,23 @@ export default function Dropdown({
   onChange,
   selectedOptions,
 }) {
+  const [previousOption, setPreviousOption] = useState(null);
+
   const handleDropdownChange = (event) => {
-    console.log(selectedOptions);
     const selectedName = event.target.value;
     const selectedOption = choices.find(
       (option) => option.name === selectedName
     );
+
     if (selectedOption && onChange) {
-      onChange(categoryName, [selectedOption]);
+      const modifiedSelectedOption = {
+        ...selectedOption,
+        type: "Dropdown",
+        checked: true,
+        prevValue: previousOption ? previousOption.name : null,
+      };
+      onChange(categoryName, modifiedSelectedOption);
+      setPreviousOption(selectedOption);
     }
   };
 

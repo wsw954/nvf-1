@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 export default function Layout1({ selectedMake, selectedModel }) {
   const [configuration, setConfiguration] = useState(null);
-  const [selectedOptions, setSelectedOptions] = useState({});
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [showNextCategory, setShowNextCategory] = useState(false);
 
   useEffect(() => {
@@ -36,10 +36,26 @@ export default function Layout1({ selectedMake, selectedModel }) {
   }, [selectedMake, selectedModel]);
 
   const handleChange = (categoryName, selectedOption) => {
-    setSelectedOptions((prevOptions) => ({
-      ...prevOptions,
-      [categoryName]: selectedOption,
-    }));
+    setSelectedOptions((prevOptions) => {
+      const updatedOptions = { ...prevOptions };
+      if (selectedOption.type === "Dropdown") {
+        updatedOptions[categoryName] = [selectedOption];
+      } else if (selectedOption.type === "CheckBoxGroup") {
+        if (selectedOption.checked) {
+          // Add the selected option to the array
+          updatedOptions[categoryName] = [
+            ...updatedOptions[categoryName],
+            selectedOption,
+          ];
+        } else {
+          // Remove the unselected option from the array
+          updatedOptions[categoryName] = updatedOptions[categoryName].filter(
+            (option) => option.name !== selectedOption.name
+          );
+        }
+      }
+      return updatedOptions;
+    });
 
     if (configuration[0].categoryName === categoryName) {
       setShowNextCategory(true);
@@ -59,8 +75,8 @@ export default function Layout1({ selectedMake, selectedModel }) {
                   <CategoryComponent
                     categoryName={categoryName}
                     choices={choices}
-                    onChange={(categoryName, [selectedOption]) =>
-                      handleChange(categoryName, [selectedOption])
+                    onChange={(categoryName, selectedOption) =>
+                      handleChange(categoryName, selectedOption)
                     }
                     selectedOptions={selectedOptions[categoryName] || []}
                   />

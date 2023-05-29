@@ -7,17 +7,19 @@ export default function CheckBoxGroup({
   selectedOptions,
 }) {
   const handleCheckBoxChange = (event) => {
-    console.log(selectedOptions);
-    const option = choices.find((choice) => choice.name === event.target.value);
-    if (event.target.checked) {
-      // add the selected option to the array of selected options
-      onChange(categoryName, [...selectedOptions, option]);
-    } else {
-      // remove the unselected option from the array of selected options
-      const newSelectedOptions = selectedOptions.filter(
-        (prevOption) => prevOption.name !== option.name
-      );
-      onChange(categoryName, newSelectedOptions);
+    const selectedName = event.target.value;
+    const isChecked = event.target.checked;
+    const selectedOption = choices.find(
+      (option) => option.name === selectedName
+    );
+
+    if (selectedOption && onChange) {
+      const modifiedSelectedOption = {
+        ...selectedOption,
+        type: "CheckBoxGroup",
+        checked: isChecked,
+      };
+      onChange(categoryName, modifiedSelectedOption);
     }
   };
 
