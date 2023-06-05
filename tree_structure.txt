@@ -36,7 +36,6 @@ D:.
 |       vercel.svg
 |       
 +---state
-|       AppContext.js
 |       reducer.js
 |       
 +---styles

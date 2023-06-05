@@ -1,26 +1,19 @@
 import Dropdown from "../../components/Dropdown";
 import CheckBoxGroup from "../../components/CheckBoxGroup";
 
-const CivicConfigurations = [
+const AccordData = [
   {
     categoryName: "Trim",
     component: Dropdown,
     choices: [
-      { name: "Sedan LX", price: 23750, serial: "tt1", ancestor: [] },
-      { name: "Sedan Sport", price: 25050, serial: "tt2", ancestor: [] },
-      { name: "Sedan EX", price: 26450, serial: "tt3", ancestor: [] },
-      { name: "Sedan Touring", price: 30050, serial: "tt4", ancestor: [] },
-      { name: "Hatchback EX", price: 24750, serial: "tt5", ancestor: [] },
-      { name: "Hatchback Sport", price: 26150, serial: "tt6", ancestor: [] },
-      { name: "Hatchback EX-L", price: 28450, serial: "tt7", ancestor: [] },
+      { name: "Sedan LX", price: 25000, serial: "tt1", ancestor: "ancestor" },
+      { name: "Sedan EX", price: 26000, serial: "tt2", ancestor: "ancestor" },
       {
-        name: "Hatchback Sport Touring",
-        price: 31250,
-        serial: "tt8",
-        ancestor: [],
+        name: "Sedan Touring",
+        price: 27000,
+        serial: "tt3",
+        ancestor: "ancestor",
       },
-      { name: "Si", price: 28500, serial: "tt9", ancestor: [] },
-      { name: "Type R", price: 42895, serial: "tt10", ancestor: [] },
     ],
   },
   {
@@ -30,7 +23,7 @@ const CivicConfigurations = [
       {
         name: "2.0L 4-Cyl 158hp Engine w/CVT",
         serial: "pw1",
-        descendent: [{ categoryName: "Trim", ancestor: ["tt3"] }],
+        descendent: [{ categoryName: "Trim", ancestor: ["tt1"] }],
         price: 0,
       },
       {
@@ -57,27 +50,26 @@ const CivicConfigurations = [
       },
       {
         name: "Lunar Silver Metallic",
-        descendent: [{ categoryName: "Trim", ancestor: ["tt1", "tt2"] }],
+        descendent: [{ categoryName: "Trim", ancestor: ["tt2"] }],
         price: 0,
       },
       {
         name: "Meteorite Gray Metallic",
-        descendent: [{ categoryName: "Trim", ancestor: ["tt1", "tt2"] }],
+        descendent: [{ categoryName: "Trim", ancestor: ["tt2"] }],
         price: 0,
       },
       {
         name: "Rallye Red",
-        descendent: [{ categoryName: "Trim", ancestor: ["tt1", "tt2"] }],
+        descendent: [{ categoryName: "Trim", ancestor: ["tt2"] }],
         price: 0,
       },
       {
         name: "Platinum White Pearl",
-        descendent: [{ categoryName: "Trim", ancestor: ["tt1", "tt2"] }],
+        descendent: [{ categoryName: "Trim", ancestor: ["tt2"] }],
         price: 455,
       },
     ],
   },
-
   {
     categoryName: "Wheels",
     component: Dropdown,
@@ -96,22 +88,6 @@ const CivicConfigurations = [
         name: "Black Rims",
         descendent: [{ categoryName: "Trim", ancestor: ["tt2"] }],
         price: 500,
-      },
-    ],
-  },
-
-  {
-    categoryName: "Packages",
-    component: CheckBoxGroup,
-    choices: [
-      {
-        name: "All-Season Protection Package I",
-        packegeComponents: [],
-        price: 420,
-        descendent: ["tt1", "tt2", "tt3", "tt7"],
-        serial: "pk1",
-        popup: false,
-        action: true,
       },
     ],
   },
@@ -148,4 +124,4 @@ const CivicConfigurations = [
   },
 ];
 
-export default CivicConfigurations;
+export default AccordData;

@@ -1,54 +1,31 @@
 const ACTIONS = {
-  MAKE_SELECTED: "MAKE_SELECTED",
-  MODEL_SELECTED: "MODEL_SELECTED",
-  SELECT_CHOICE: "SELECT_CHOICE",
-  CHECKBOX_CHOICE: "CHECKBOX_CHOICE",
+  INITIAL_CONFIGURATION: "INITIAL_CONFIGURATION",
+  OPTION_CHANGE: "OPTION_CHANGE",
   POPUP_CONFIRM: "POPUP_CONFIRM",
   POPUP_CANCEL: "POPUP_CANCEL",
 };
 
-//Set initial state
-export const initialState = {
-  selectedMake: "",
-  selectedModel: "",
-  choices: [],
-  popup: {
-    show: false,
-    message: "",
-    detail: {},
-  },
-};
-
-function reducer(state, action) {
+export function reducer(state, action) {
   switch (action.type) {
-    case ACTIONS.MAKE_SELECTED:
+    case ACTIONS.INITIAL_CONFIGURATION:
+      console.log(action.payload);
+      return { ...state, availableChoices: [action.payload] };
+    case ACTIONS.OPTION_CHANGE:
+      console.log("update state, for option change");
       return {
         ...state,
-        selectedMake: action.payload.make,
-        selectedModel: "",
-        choices: [],
       };
-    case ACTIONS.MODEL_SELECTED:
+    case ACTIONS.POPUP_CONFIRM:
+      console.log("Handle POPUP confirm");
       return {
         ...state,
-        selectedModel: action.payload.model,
-        choices: [],
       };
-    case ACTIONS.SELECT_CHOICE:
-      console.log("Dropdown selected");
+    case ACTIONS.POPUP_CANCEL:
+      console.log("Handle PopUP cancel");
       return {
         ...state,
-        choices: [action.payload.choice],
-      };
-    case ACTIONS.CHECKBOX_CHOICE:
-      console.log("Checkbox selected");
-      return {
-        ...state,
-        choices: [action.payload.choice],
       };
     default:
       return state;
   }
 }
-
-export default reducer;
