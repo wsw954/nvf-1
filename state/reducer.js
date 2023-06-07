@@ -8,10 +8,9 @@ const ACTIONS = {
 export function reducer(state, action) {
   switch (action.type) {
     case ACTIONS.INITIAL_CONFIGURATION:
-      console.log(action.payload);
       return { ...state, availableChoices: [action.payload] };
     case ACTIONS.OPTION_CHANGE:
-      console.log("update state, for option change");
+      console.log("Line 14 in reducer, handle OPTION_CHANGE");
       return {
         ...state,
       };

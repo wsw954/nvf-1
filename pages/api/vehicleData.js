@@ -9,7 +9,7 @@ const data = [
   {
     make: "Honda",
     models: [
-      { name: "Accord", layout: "Layout1" },
+      { name: "Accord", layout: "LayoutA" },
       { name: "Civic", layout: "LayoutA" },
       { name: "CR-V", layout: "Layout1" },
       { name: "Ridgeline", layout: "Layout2" },

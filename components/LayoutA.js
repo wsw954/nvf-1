@@ -1,7 +1,7 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { reducer } from "../state/reducer";
 
-export default function Layout1({ selectedMake, selectedModel }) {
+export default function LayoutA({ selectedMake, selectedModel }) {
   const initialState = {
     availableChoices: [],
     selectedChoices: [],
@@ -15,18 +15,27 @@ export default function Layout1({ selectedMake, selectedModel }) {
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [configuration, setConfiguration] = useState(null);
 
   useEffect(() => {
     const kebabCaseModelName = selectedModel.split(" ").join("-").toLowerCase();
     import(
-      `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}A`
+      `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
     ).then((module) => {
+      setConfiguration(module);
       dispatch({
         type: "INITIAL_CONFIGURATION",
         payload: module.initialChoices(),
       });
     });
   }, [selectedMake, selectedModel]);
+
+  const handleOptionChange = (categoryName, selectedOption) => {
+    if (configuration) {
+      const updatedChoices = configuration.handleChange(state, selectedOption);
+      // console.log(selectedOption);
+    }
+  };
 
   return (
     <div>
@@ -42,7 +51,7 @@ export default function Layout1({ selectedMake, selectedModel }) {
                     categoryName={categoryName}
                     choices={choices}
                     onChange={(categoryName, selectedOption) =>
-                      handleChange(categoryName, selectedOption)
+                      handleOptionChange(categoryName, selectedOption)
                     }
                     selectedOptions={[]}
                   />

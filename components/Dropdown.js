@@ -18,7 +18,7 @@ export default function Dropdown({
     if (selectedOption && onChange) {
       const modifiedSelectedOption = {
         ...selectedOption,
-        type: "Dropdown",
+        categoryName: categoryName,
         checked: true,
         prevValue: previousOption ? previousOption.name : null,
       };

@@ -16,7 +16,7 @@ export default function CheckBoxGroup({
     if (selectedOption && onChange) {
       const modifiedSelectedOption = {
         ...selectedOption,
-        type: "CheckBoxGroup",
+        categoryName: categoryName,
         checked: isChecked,
       };
       onChange(categoryName, modifiedSelectedOption);
