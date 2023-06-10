@@ -25,7 +25,7 @@ export default function LayoutA({ selectedMake, selectedModel }) {
       setConfiguration(module);
       dispatch({
         type: "INITIAL_CONFIGURATION",
-        payload: module.initialChoices(),
+        payload: module.initialChoices(state),
       });
     });
   }, [selectedMake, selectedModel]);
@@ -33,7 +33,10 @@ export default function LayoutA({ selectedMake, selectedModel }) {
   const handleOptionChange = (categoryName, selectedOption) => {
     if (configuration) {
       const updatedChoices = configuration.handleChange(state, selectedOption);
-      // console.log(selectedOption);
+      dispatch({
+        type: "OPTION_CHANGE",
+        payload: updatedChoices,
+      });
     }
   };
 
@@ -43,22 +46,24 @@ export default function LayoutA({ selectedMake, selectedModel }) {
       {state.availableChoices &&
         state.availableChoices.map(
           ({ categoryName, component: CategoryComponent, choices }, index) => {
-            // Render only first dropdown initially, then according to showNextCategory flag
-            if (index === 0 || showNextCategory) {
-              return (
-                <div key={categoryName}>
-                  <CategoryComponent
-                    categoryName={categoryName}
-                    choices={choices}
-                    onChange={(categoryName, selectedOption) =>
-                      handleOptionChange(categoryName, selectedOption)
-                    }
-                    selectedOptions={[]}
-                  />
-                </div>
-              );
-            }
-            return null;
+            const selectedCategory = state.selectedChoices.find(
+              (choice) => choice.categoryName === categoryName
+            );
+            const selectedOptions = selectedCategory
+              ? selectedCategory.choices
+              : [];
+            return (
+              <div key={categoryName}>
+                <CategoryComponent
+                  categoryName={categoryName}
+                  choices={choices}
+                  onChange={(categoryName, selectedOption) =>
+                    handleOptionChange(categoryName, selectedOption)
+                  }
+                  selectedOptions={selectedOptions}
+                />
+              </div>
+            );
           }
         )}
     </div>

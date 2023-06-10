@@ -19,6 +19,7 @@ export default function Dropdown({
       const modifiedSelectedOption = {
         ...selectedOption,
         categoryName: categoryName,
+        type: "Single",
         checked: true,
         prevValue: previousOption ? previousOption.name : null,
       };

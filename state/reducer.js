@@ -10,9 +10,10 @@ export function reducer(state, action) {
     case ACTIONS.INITIAL_CONFIGURATION:
       return { ...state, availableChoices: [action.payload] };
     case ACTIONS.OPTION_CHANGE:
-      console.log("Line 14 in reducer, handle OPTION_CHANGE");
       return {
         ...state,
+        availableChoices: action.payload.availableChoices,
+        selectedChoices: action.payload.selectedChoices,
       };
     case ACTIONS.POPUP_CONFIRM:
       console.log("Handle POPUP confirm");
