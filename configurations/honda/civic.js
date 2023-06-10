@@ -8,8 +8,10 @@ export function initialChoices(currentState) {
 
 export function handleChange(currentState, selectedOption) {
   let updatedState = { ...currentState };
-  const { categoryName, type, action, serial, checked } = selectedOption;
+  const { action } = selectedOption;
+
   if (action != null) {
+    //Destructure the action object, assigning null to any object that doesn't exists
     const {
       ancestor = null,
       optionPackage = null,
@@ -37,9 +39,40 @@ export function handleChange(currentState, selectedOption) {
 }
 
 function handleAncestor(state, selectedOption) {
-  // Do something with ancestor and state
-  let newState = { ...state, ancestorProcessed: true };
-  return newState;
+  const { categoryName, type, action, serial, checked } = selectedOption;
+
+  const newChoicesAvailable = data
+    .filter((item) => item.categoryName !== categoryName) // Skip the object with same categoryName
+    .map((item) => ({
+      ...item,
+      choices: item.choices.filter(
+        (choice) => choice.descendent && choice.descendent.includes(serial)
+      ),
+    }));
+
+  const newChoicesMap = new Map(
+    newChoicesAvailable.map((item) => [item.categoryName, item])
+  );
+
+  const updatedAvailableChoices = state.availableChoices.map((item) => {
+    if (newChoicesMap.has(item.categoryName)) {
+      return newChoicesMap.get(item.categoryName);
+    } else {
+      return item;
+    }
+  });
+
+  newChoicesAvailable.forEach((newChoice) => {
+    if (
+      !updatedAvailableChoices.some(
+        (choice) => choice.categoryName === newChoice.categoryName
+      )
+    ) {
+      updatedAvailableChoices.push(newChoice);
+    }
+  });
+
+  return { ...state, availableChoices: updatedAvailableChoices };
 }
 
 function handleOptionPackage(updatedState, selectedOption) {
@@ -102,11 +135,9 @@ function addOption(state, selectedOption) {
             (option) => option.serial === selectedOption.serial
           );
           if (existingOptionIndex === -1) {
-            // Add a new choice to the existing category
             updatedSelectedChoices[stateChoiceIndex].choices.push(choice);
           }
         } else {
-          // Add a new category to selectedChoices
           updatedSelectedChoices.push({
             categoryName: category.categoryName,
             component: category.component,

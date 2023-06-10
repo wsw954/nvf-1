@@ -21,7 +21,7 @@ export default function Dropdown({
         categoryName: categoryName,
         type: "Single",
         checked: true,
-        prevValue: previousOption ? previousOption.name : null,
+        prevValue: previousOption ? previousOption : null,
       };
       onChange(categoryName, modifiedSelectedOption);
       setPreviousOption(selectedOption);

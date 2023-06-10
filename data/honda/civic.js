@@ -155,17 +155,17 @@ const CivicData = [
     choices: [
       {
         name: "Red Rims",
-        descendent: [{ categoryName: "Trim", descendent: ["tt2"] }],
+        descendent: ["tt1", "tt2", "tt3", "tt4"],
         price: 0,
       },
       {
         name: "Green Rims",
-        descendent: [{ categoryName: "Trim", descendent: ["tt2"] }],
+        descendent: ["tt1", "tt2", "tt3", "tt4"],
         price: 0,
       },
       {
         name: "Black Rims",
-        descendent: [{ categoryName: "Trim", descendent: ["tt2"] }],
+        descendent: ["tt5", "tt6", "tt7", "tt8"],
         price: 500,
       },
     ],
@@ -176,29 +176,34 @@ const CivicData = [
     choices: [
       {
         name: "Body Side Molding",
-        descendent: [{ categoryName: "Trim", descendent: ["tt2"] }],
+        descendent: ["tt1", "tt2", "tt3", "tt4"],
         price: 242,
       },
       {
         name: "Decklid Spoiler – HPD™",
-        descendent: [{ categoryName: "Trim", descendent: ["tt2"] }],
+        descendent: ["tt1", "tt2", "tt3", "tt4"],
         price: 322,
       },
-      { name: "Door Edge Film", price: 54, descendent: ["tt2"] },
-      { name: "Door Edge Guard", price: 124 },
-      { name: "Door Handle Film", price: 54 },
-      { name: "Door Visors – Chrome", price: 231 },
       {
-        name: "Emblems, Front and Rear H-Mark and Civic – Gloss Black",
-        price: 113,
+        name: "Door Edge Film",
+        price: 54,
+        descendent: ["tt1", "tt2", "tt3", "tt4"],
       },
-      { name: "Rear Bumper Appliqué", price: 76 },
-      { name: "Splash Guard Set", price: 113 },
-      { name: "Underbody Spoiler – HPD™ Front", price: 357 },
-      { name: "Underbody Spoiler – HPD™ Rear", price: 322 },
-      { name: "Underbody Spoiler – HPD™ Side", price: 408 },
-      { name: "Wheel Locks", price: 63 }, // Assuming the minimum price
-      { name: "Wheel Lug Nuts - Black", price: 51 },
+      {
+        name: "Door Edge Guard",
+        price: 124,
+        descendent: ["tt1", "tt2", "tt3", "tt4"],
+      },
+      {
+        name: "Door Handle Film",
+        price: 54,
+        descendent: ["tt5", "tt6", "tt7", "tt8"],
+      },
+      {
+        name: "Door Visors – Chrome",
+        price: 231,
+        descendent: ["tt5", "tt6", "tt7", "tt8"],
+      },
     ],
   },
 ];
