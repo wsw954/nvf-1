@@ -1,9 +1,11 @@
 import data from "../../data/honda/civicTest";
 
 export function initialChoices(currentState) {
-  const trimsAvailable = data.find((option) => option.categoryName === "Trim");
+  const choicesAvailable = data.find(
+    (option) => option.categoryName === "Trim"
+  );
 
-  return trimsAvailable;
+  return choicesAvailable;
 }
 
 export function handleChange(currentState, selectedOption) {
@@ -14,14 +16,19 @@ export function handleChange(currentState, selectedOption) {
     //Destructure the action object, assigning null to any object that doesn't exists
     const {
       ancestor = null,
+      sponsor = null,
       optionPackage = null,
       parent = null,
       rival = null,
       sibling = null,
     } = action;
     if (ancestor != null) {
-      updatedState = handleAncestor(currentState, selectedOption);
+      updatedState = handleAncestor(ancestor, currentState, selectedOption);
     }
+    if (sponsor != null) {
+      updatedState = handleSponsor(sponsor, currentState, selectedOption);
+    }
+
     if (optionPackage != null) {
       updatedState = handleOptionPackage(currentState, selectedOption);
     }
@@ -38,41 +45,39 @@ export function handleChange(currentState, selectedOption) {
   return handleRegularOptionChange(updatedState, selectedOption);
 }
 
-function handleAncestor(state, selectedOption) {
+function handleAncestor(ancestorArray, state, selectedOption) {
   const { categoryName, type, action, serial, checked } = selectedOption;
 
-  const newChoicesAvailable = data
-    .filter((item) => item.categoryName !== categoryName) // Skip the object with same categoryName
-    .map((item) => ({
-      ...item,
-      choices: item.choices.filter(
-        (choice) => choice.descendent && choice.descendent.includes(serial)
-      ),
-    }));
-
-  const newChoicesMap = new Map(
-    newChoicesAvailable.map((item) => [item.categoryName, item])
+  const newChoicesAvailable = getDescendents(
+    ancestorArray,
+    categoryName,
+    serial
   );
 
-  const updatedAvailableChoices = state.availableChoices.map((item) => {
-    if (newChoicesMap.has(item.categoryName)) {
-      return newChoicesMap.get(item.categoryName);
-    } else {
-      return item;
-    }
-  });
+  const ancestorCategoryChoices = state.availableChoices.filter(
+    (choice) => choice.categoryName === categoryName
+  );
 
-  newChoicesAvailable.forEach((newChoice) => {
-    if (
-      !updatedAvailableChoices.some(
-        (choice) => choice.categoryName === newChoice.categoryName
-      )
-    ) {
-      updatedAvailableChoices.push(newChoice);
-    }
-  });
+  const updatedAvailableChoices = [
+    ...ancestorCategoryChoices,
+    ...newChoicesAvailable,
+  ];
 
-  return { ...state, availableChoices: updatedAvailableChoices };
+  const updatedSelectedChoices = state.selectedChoices.filter(
+    (choice) => choice.categoryName === categoryName
+  );
+
+  return {
+    ...state,
+    availableChoices: updatedAvailableChoices,
+    selectedChoices: updatedSelectedChoices,
+  };
+}
+
+function handleSponsor(sponsorArray, state, selectedOption) {
+  const { categoryName, type, action, serial, checked } = selectedOption;
+  let newState = { ...state };
+  return newState;
 }
 
 function handleOptionPackage(updatedState, selectedOption) {
@@ -102,8 +107,28 @@ function handleRegularOptionChange(state, selectedOption) {
   }
 }
 
+function getDescendents(ancestorArray, categoryName, serial) {
+  let filteredData = data;
+
+  if (ancestorArray.length > 0) {
+    filteredData = data.filter((item) =>
+      ancestorArray.includes(item.categoryName)
+    );
+  }
+  const newChoicesAvailable = filteredData
+    .filter((item) => item.categoryName !== categoryName) // Skip the object with same categoryName
+    .map((item) => ({
+      ...item,
+      choices: item.choices.filter(
+        (choice) => choice.descendent && choice.descendent.includes(serial)
+      ),
+    }));
+  return newChoicesAvailable;
+}
+
 function addOption(state, selectedOption) {
-  const { categoryName, type, serial, checked } = selectedOption;
+  const { categoryName, type, serial } = selectedOption;
+
   const category = data.find((item) => item.categoryName === categoryName);
   let updatedSelectedChoices = [...state.selectedChoices]; // Make a copy of selectedChoices
 
@@ -147,17 +172,33 @@ function addOption(state, selectedOption) {
       }
     }
   }
-
-  // Spread the original state and update selectedChoices
   return { ...state, selectedChoices: updatedSelectedChoices };
 }
 
 function removeOption(state, selectedOption) {
-  const { categoryName, type, action, serial, checked } = selectedOption;
-  if (type === "Single") {
-    console.log("Remove Single Choice Option");
+  const { categoryName, serial } = selectedOption;
+
+  let updatedSelectedChoices = [...state.selectedChoices]; // Make a copy of selectedChoices
+
+  const categoryIndex = updatedSelectedChoices.findIndex(
+    (item) => item.categoryName === categoryName
+  );
+
+  if (categoryIndex !== -1) {
+    const choiceIndex = updatedSelectedChoices[categoryIndex].choices.findIndex(
+      (item) => item.serial === serial
+    );
+
+    if (choiceIndex !== -1) {
+      // Remove the choice
+      updatedSelectedChoices[categoryIndex].choices.splice(choiceIndex, 1);
+
+      // If no choices remain in this category, remove the category
+      if (updatedSelectedChoices[categoryIndex].choices.length === 0) {
+        updatedSelectedChoices.splice(categoryIndex, 1);
+      }
+    }
   }
-  if (type === "Multiple") {
-    console.log("Remove Multiple Choice Option");
-  }
+
+  return { ...state, selectedChoices: updatedSelectedChoices };
 }
