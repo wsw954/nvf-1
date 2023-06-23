@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useState } from "react";
 import { reducer } from "../state/reducer";
+import { Popup } from "/components/Popup";
 
 export default function LayoutA({ selectedMake, selectedModel }) {
   const initialState = {
@@ -9,7 +10,6 @@ export default function LayoutA({ selectedMake, selectedModel }) {
       visible: false,
       message: "",
       confirmAction: null,
-      categoryName: null,
       selectedOption: null,
     },
   };
@@ -66,6 +66,13 @@ export default function LayoutA({ selectedMake, selectedModel }) {
             );
           }
         )}
+      {state.popup.visible && (
+        <Popup
+          message={state.popup.message}
+          confirmAction={state.popup.confirmAction}
+          selectedOption={state.popup.selectedOption}
+        />
+      )}
     </div>
   );
 }

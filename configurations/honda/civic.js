@@ -10,7 +10,8 @@ export function initialChoices(currentState) {
 
 export function handleChange(currentState, selectedOption) {
   let updatedState = { ...currentState };
-  const { action } = selectedOption;
+  const { action, checked } = selectedOption;
+  console.log(selectedOption);
 
   if (action != null) {
     //Destructure the action object, assigning null to any object that doesn't exists
@@ -18,30 +19,32 @@ export function handleChange(currentState, selectedOption) {
       ancestor = null,
       sponsor = null,
       remover = null,
-      optionPackage = null,
+      packageOption = null,
       parent = null,
       rival = null,
       sibling = null,
     } = action;
+
     if (ancestor != null) {
       updatedState = handleAncestor(updatedState, selectedOption);
     }
-    if (sponsor != null) {
+    if (sponsor != null && sponsor.length > 0) {
       updatedState = handleSponsor(updatedState, selectedOption);
-    }
-    if (remover != null) {
-      updatedState = handleRemover({ ...currentState }, selectedOption);
-    }
-
-    if (optionPackage != null) {
-      updatedState = handleOptionPackage(updatedState, selectedOption);
-    }
-    if (parent != null) {
-      updatedState = handleParent(updatedState, selectedOption);
     }
     if (rival != null) {
       updatedState = handleRival(updatedState, selectedOption);
     }
+    if (remover != null && remover.length > 0) {
+      updatedState = handleRemover(updatedState, selectedOption);
+    }
+
+    if (packageOption != null && packageOption.length > 0) {
+      updatedState = handlePackageOption(updatedState, selectedOption);
+    }
+    if (parent != null) {
+      updatedState = handleParent(updatedState, selectedOption);
+    }
+
     if (sibling != null) {
       updatedState = handleSibling(updatedState, selectedOption);
     }
@@ -75,13 +78,19 @@ function handleAncestor(state, selectedOption) {
 
 function handleSponsor(state, selectedOption) {
   const { categoryName, action: { sponsor } = {}, serial } = selectedOption;
-  let recipientChoices = getRecipients(categoryName, serial);
+  let recipientChoices = getChoices(sponsor);
 
   let updatedAvailableChoices = recipientChoices.reduce(
     (choices, choice) => addAvailableChoices(state, choice),
     [...state.availableChoices]
   );
   return { ...state, availableChoices: updatedAvailableChoices };
+}
+
+//Helper function when rival option selected
+function handleRival(state, selectedOption) {
+  let newState = { ...state, rivalProcessed: true };
+  return newState;
 }
 
 function handleRemover(state, selectedOption) {
@@ -112,19 +121,28 @@ function handleRemover(state, selectedOption) {
   };
 }
 
-function handleOptionPackage(state, selectedOption) {
-  let newState = { ...state, optionPackageProcessed: true };
-  return newState;
-}
+function handlePackageOption(state, selectedOption) {
+  const {
+    categoryName,
+    action: { packageOption } = {},
+    serial,
+    checked,
+  } = selectedOption;
+  let packageComponents = getChoices(packageOption);
+  if (checked) {
+    console.log(packageComponents);
 
+    return { ...state };
+  } else {
+    console.log("Line 127 in handlePackageOption--Package Unselected");
+    return { ...state };
+  }
+}
 function handleParent(state, selectedOption) {
   let newState = { ...state, parentProcessed: true };
   return newState;
 }
-function handleRival(state, selectedOption) {
-  let newState = { ...state, rivalProcessed: true };
-  return newState;
-}
+
 function handleSibling(state, selectedOption) {
   let newState = { ...state, siblingProcessed: true };
   return newState;
@@ -141,8 +159,7 @@ function handleRegularOptionChange(state, selectedOption) {
 
 //Helper function for handleAncestor()
 function getDescendents(categoryName, serial) {
-  let filteredData = data;
-  const newChoicesAvailable = filteredData
+  const newChoicesAvailable = data
     .filter((item) => item.categoryName !== categoryName) // Skip the object with same categoryName
     .map((item) => ({
       ...item,
@@ -155,35 +172,17 @@ function getDescendents(categoryName, serial) {
   return newChoicesAvailable;
 }
 
-//Helper function for handleSponsor()
-function getRecipients(categoryName, serial) {
-  const additionalChoicesAvailable = data
-    .filter((item) => item.categoryName !== categoryName) // Skip the object with same categoryName
+//Helper function to retrieve choices from data file
+function getChoices(serials) {
+  const additionalChoices = data
     .map((item) => ({
       ...item,
-      choices: item.choices.filter(
-        (choice) => choice.recipient && choice.recipient.includes(serial)
-      ),
+      choices: item.choices.filter((choice) => serials.includes(choice.serial)),
     }))
     .filter((item) => item.choices.length > 0); // Exclude objects where 'choices' array is empty
 
-  return additionalChoicesAvailable;
+  return additionalChoices;
 }
-
-// function getRemovals(categoryName, serial) {
-//   let filteredData = data;
-//   const removalChoices = filteredData
-//     .filter((item) => item.categoryName !== categoryName) // Skip the object with same categoryName
-//     .map((item) => ({
-//       ...item,
-//       choices: item.choices.filter(
-//         (choice) => choice.recipient && choice.recipient.includes(serial)
-//       ),
-//     }))
-//     .filter((item) => item.choices.length > 0); // Exclude objects where 'choices' array is empty
-
-//   return removalChoices;
-// }
 
 function addSelectedChoices(state, selectedOption) {
   const { categoryName, type, serial } = selectedOption;
