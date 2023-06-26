@@ -17,7 +17,6 @@ export function reducer(state, action) {
         popup: action.payload.popup,
       };
     case ACTIONS.POPUP_CONFIRM:
-      // console.log("Handle POPUP CONFIRM-reducer");
       return {
         ...state,
         availableChoices: action.payload.availableChoices,

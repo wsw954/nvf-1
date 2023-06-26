@@ -53,15 +53,38 @@ export function handleOptionChange(state, selectedOption) {
 
 export function handlePopupConfirm(state, selectedOption) {
   let updatedState = { ...state };
-  console.log("Line 56 in config /handlePopupConfirm");
-  // const { action, checked } = selectedOption;
-  return updatedState;
+  const { action, checked } = selectedOption;
+
+  if (action != null) {
+    const { rivals = null, sibling = null } = action;
+    //Handle rival selection
+    if (rivals != null && checked) {
+      for (let rival of rivals) {
+        const rivalChoice = getChoices(rival);
+        const modifiedChoice = {
+          ...rivalChoice[0].choices[0],
+          categoryName: rivalChoice[0].categoryName,
+        };
+        updatedState = removeSelectedChoices(updatedState, modifiedChoice);
+      }
+    }
+  }
+
+  return { ...updatedState, popup: false, message: "", selectedOption: null };
 }
 
 export function handlePopupCancel(state, selectedOption) {
   let updatedState = { ...state };
+
   const { action, checked } = selectedOption;
-  return updatedState;
+  if (action != null) {
+    const { rivals = null, sibling = null } = action;
+    //Handle rival selection
+    if (rivals != null && checked) {
+      updatedState = removeSelectedChoices(updatedState, selectedOption);
+    }
+  }
+  return { ...updatedState, popup: false, message: "", selectedOption: null };
 }
 
 //Helper function to ancestor option
