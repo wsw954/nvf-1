@@ -20,7 +20,7 @@ export default function CheckBoxGroup({
         type: "Multiple",
         checked: isChecked,
       };
-      onChange(categoryName, modifiedSelectedOption);
+      onChange(modifiedSelectedOption);
     }
   };
 

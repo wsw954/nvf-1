@@ -8,10 +8,9 @@ export function initialChoices(currentState) {
   return choicesAvailable;
 }
 
-export function handleChange(currentState, selectedOption) {
-  let updatedState = { ...currentState };
+export function handleOptionChange(state, selectedOption) {
+  let updatedState = { ...state };
   const { action, checked } = selectedOption;
-  console.log(selectedOption);
 
   if (action != null) {
     //Destructure the action object, assigning null to any object that doesn't exists
@@ -21,7 +20,7 @@ export function handleChange(currentState, selectedOption) {
       remover = null,
       packageOption = null,
       parent = null,
-      rival = null,
+      rivals = null,
       sibling = null,
     } = action;
 
@@ -31,7 +30,7 @@ export function handleChange(currentState, selectedOption) {
     if (sponsor != null && sponsor.length > 0) {
       updatedState = handleSponsor(updatedState, selectedOption);
     }
-    if (rival != null) {
+    if (rivals != null && checked) {
       updatedState = handleRival(updatedState, selectedOption);
     }
     if (remover != null && remover.length > 0) {
@@ -52,6 +51,20 @@ export function handleChange(currentState, selectedOption) {
   return handleRegularOptionChange(updatedState, selectedOption);
 }
 
+export function handlePopupConfirm(state, selectedOption) {
+  let updatedState = { ...state };
+  console.log("Line 56 in config /handlePopupConfirm");
+  // const { action, checked } = selectedOption;
+  return updatedState;
+}
+
+export function handlePopupCancel(state, selectedOption) {
+  let updatedState = { ...state };
+  const { action, checked } = selectedOption;
+  return updatedState;
+}
+
+//Helper function to ancestor option
 function handleAncestor(state, selectedOption) {
   const { categoryName, type, action, serial, checked } = selectedOption;
 
@@ -89,8 +102,31 @@ function handleSponsor(state, selectedOption) {
 
 //Helper function when rival option selected
 function handleRival(state, selectedOption) {
-  let newState = { ...state, rivalProcessed: true };
-  return newState;
+  const { action: { rival = [] } = {} } = selectedOption;
+  const rivalStatus = checkIfRivalSelected(
+    state.selectedChoices,
+    selectedOption
+  );
+
+  if (rivalStatus.isSelected) {
+    //Update the Popup and return
+    return {
+      ...state,
+      popup: {
+        visible: true,
+        message:
+          "Selecting " +
+          selectedOption.name +
+          " will remove " +
+          rivalStatus.rivalSelectedChoice[0].choices[0].name,
+        selectedOption: selectedOption,
+      },
+    };
+  } else {
+    return { ...state };
+  }
+
+  //Will add code here to update the state with the rivalStatus object
 }
 
 function handleRemover(state, selectedOption) {
@@ -130,11 +166,8 @@ function handlePackageOption(state, selectedOption) {
   } = selectedOption;
   let packageComponents = getChoices(packageOption);
   if (checked) {
-    console.log(packageComponents);
-
     return { ...state };
   } else {
-    console.log("Line 127 in handlePackageOption--Package Unselected");
     return { ...state };
   }
 }
@@ -182,6 +215,22 @@ function getChoices(serials) {
     .filter((item) => item.choices.length > 0); // Exclude objects where 'choices' array is empty
 
   return additionalChoices;
+}
+
+function checkIfRivalSelected(selectedChoices, selectedOption) {
+  const { action: { rivals } = {} } = selectedOption;
+  const rivalSelectedChoice = selectedChoices
+    .map((item) => ({
+      ...item,
+      choices: item.choices.filter((choice) => rivals.includes(choice.serial)),
+    }))
+    .filter((item) => item.choices.length > 0);
+
+  const isSelected = rivalSelectedChoice.length > 0;
+  return {
+    isSelected,
+    rivalSelectedChoice,
+  };
 }
 
 function addSelectedChoices(state, selectedOption) {

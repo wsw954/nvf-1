@@ -14,16 +14,23 @@ export function reducer(state, action) {
         ...state,
         availableChoices: action.payload.availableChoices,
         selectedChoices: action.payload.selectedChoices,
+        popup: action.payload.popup,
       };
     case ACTIONS.POPUP_CONFIRM:
-      console.log("Handle POPUP confirm");
+      // console.log("Handle POPUP CONFIRM-reducer");
       return {
         ...state,
+        availableChoices: action.payload.availableChoices,
+        selectedChoices: action.payload.selectedChoices,
+        popup: action.payload.popup,
       };
     case ACTIONS.POPUP_CANCEL:
-      console.log("Handle PopUP cancel");
+      console.log("Handle POPUP_CANCEL");
       return {
         ...state,
+        availableChoices: action.payload.availableChoices,
+        selectedChoices: action.payload.selectedChoices,
+        popup: action.payload.popup,
       };
     default:
       return state;

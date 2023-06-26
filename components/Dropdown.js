@@ -23,7 +23,7 @@ export default function Dropdown({
         checked: true,
         prevValue: previousOption ? previousOption : null,
       };
-      onChange(categoryName, modifiedSelectedOption);
+      onChange(modifiedSelectedOption);
       setPreviousOption(selectedOption);
     }
   };

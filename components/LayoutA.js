@@ -1,6 +1,6 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useState, useCallback } from "react";
 import { reducer } from "../state/reducer";
-import { Popup } from "/components/Popup";
+import Popup from "/components/Popup";
 
 export default function LayoutA({ selectedMake, selectedModel }) {
   const initialState = {
@@ -9,7 +9,6 @@ export default function LayoutA({ selectedMake, selectedModel }) {
     popup: {
       visible: false,
       message: "",
-      confirmAction: null,
       selectedOption: null,
     },
   };
@@ -19,23 +18,65 @@ export default function LayoutA({ selectedMake, selectedModel }) {
 
   useEffect(() => {
     const kebabCaseModelName = selectedModel.split(" ").join("-").toLowerCase();
-    import(
-      `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
-    ).then((module) => {
-      setConfiguration(module);
-      dispatch({
-        type: "INITIAL_CONFIGURATION",
-        payload: module.initialChoices(state),
-      });
-    });
-  }, [selectedMake, selectedModel]);
 
-  const handleOptionChange = (categoryName, selectedOption) => {
+    async function loadConfiguration() {
+      try {
+        const module = await import(
+          `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
+        );
+        setConfiguration(module);
+        dispatch({
+          type: "INITIAL_CONFIGURATION",
+          payload: module.initialChoices(state),
+        });
+      } catch (error) {
+        console.error(
+          `Failed to load configuration for ${selectedMake} ${selectedModel}: `,
+          error
+        );
+        // Additional code for error display
+      }
+    }
+
+    loadConfiguration();
+  }, [selectedMake, selectedModel]);
+  const handleOptionChange = useCallback(
+    (selectedOption) => {
+      if (configuration) {
+        const updatedChoices = configuration.handleOptionChange(
+          state,
+          selectedOption
+        );
+        dispatch({
+          type: "OPTION_CHANGE",
+          payload: updatedChoices,
+        });
+      }
+    },
+    [configuration, state]
+  );
+
+  const handlePopupConfirm = (selectedOption) => {
     if (configuration) {
-      const updatedChoices = configuration.handleChange(state, selectedOption);
+      const updatedForm = configuration.handlePopupConfirm(
+        state,
+        selectedOption
+      );
       dispatch({
-        type: "OPTION_CHANGE",
-        payload: updatedChoices,
+        type: "POPUP_CONFIRM",
+        payload: updatedForm,
+      });
+    }
+  };
+  const handlePopupCancel = (selectedOption) => {
+    if (configuration) {
+      const updatedForm = configuration.handlePopupCancel(
+        state,
+        selectedOption
+      );
+      dispatch({
+        type: "POPUP_CANCEL",
+        payload: updatedForm,
       });
     }
   };
@@ -57,8 +98,8 @@ export default function LayoutA({ selectedMake, selectedModel }) {
                 <CategoryComponent
                   categoryName={categoryName}
                   choices={choices}
-                  onChange={(categoryName, selectedOption) =>
-                    handleOptionChange(categoryName, selectedOption)
+                  onChange={(selectedOption) =>
+                    handleOptionChange(selectedOption)
                   }
                   selectedOptions={selectedOptions}
                 />
@@ -69,8 +110,8 @@ export default function LayoutA({ selectedMake, selectedModel }) {
       {state.popup.visible && (
         <Popup
           message={state.popup.message}
-          confirmAction={state.popup.confirmAction}
-          selectedOption={state.popup.selectedOption}
+          confirmAction={() => handlePopupConfirm(state.popup.selectedOption)}
+          cancelAction={() => handlePopupCancel(state.popup.selectedOption)}
         />
       )}
     </div>

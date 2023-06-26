@@ -34,14 +34,14 @@ export default function Bizzlle() {
     setLayout(null);
   }, [selectedMake]);
 
-  const handleMakeChange = async (categoryName, selectedOption) => {
+  const handleMakeChange = async (selectedOption) => {
     setSelectedMake(selectedOption.name);
     setSelectedModel({ name: "", layout: "" });
     setLayout(null);
     fetchData(`/api/models?make=${selectedOption.name}`, setModels);
   };
 
-  function handleModelChange(categoryName, selectedOption) {
+  function handleModelChange(selectedOption) {
     if (!selectedOption || selectedOption.name === "") {
       setSelectedModel({ name: "", layout: "" });
       setLayout(null);
