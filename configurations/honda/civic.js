@@ -10,50 +10,49 @@ export function initialChoices(currentState) {
   return choicesAvailable;
 }
 
+export const actionTypes = {
+  ANCESTOR: "ancestor",
+  SPONSOR: "sponsor",
+  REMOVER: "remover",
+  PACKAGE_OPTION: "packageOption",
+  PARENT: "parent",
+  RIVALS: "rivals",
+  SIBLING: "sibling",
+};
+
 export function handleOptionChange(state, selectedOption) {
   let updatedState = { ...state };
-  const { categoryName, action = {}, checked, serial } = selectedOption;
-  // const categoryGroup = state.selectedChoices.find(
-  //   (item) => item.categoryName === categoryName
-  // );
-  // if (categoryGroup) {
-  //   const choice = categoryGroup.choices.find((item) => item.serial === serial);
-  //   console.log(selectedOption);
-  //   console.log(choice);
-  // }
+  const { action = {} } = selectedOption || {};
 
-  if (action != null && Object.keys(action).length !== 0) {
-    //Destructure the action object, assigning null to any object that doesn't exist
-    const {
-      ancestor = null,
-      sponsor = null,
-      remover = null,
-      packageOption = null,
-      parent = null,
-      rivals = null,
-      sibling = null,
-    } = action;
+  const actionHandlers = {
+    [actionTypes.SPONSOR]: handleSponsor,
+    [actionTypes.REMOVER]: handleRemover,
+    [actionTypes.PACKAGE_OPTION]: handlePackageOption,
+    [actionTypes.PARENT]: handleParent,
+    [actionTypes.RIVALS]: handleRival,
+    [actionTypes.SIBLING]: handleSibling,
+  };
 
-    if (ancestor != null) {
-      updatedState = handleAncestor(updatedState, selectedOption);
-    }
-    if (sponsor != null && sponsor.length > 0) {
-      updatedState = handleSponsor(updatedState, selectedOption);
-    }
-    if (rivals != null && checked) {
-      updatedState = handleRival(updatedState, selectedOption);
-    }
-    if (packageOption != null && packageOption.length > 0) {
-      updatedState = handlePackageOption(updatedState, selectedOption);
-    }
-    if (remover != null && remover.length > 0) {
-      updatedState = handleRemover(updatedState, selectedOption);
-    }
-    if (parent != null) {
-      updatedState = handleParent(updatedState, selectedOption);
-    }
-    if (sibling != null) {
-      updatedState = handleSibling(updatedState, selectedOption);
+  // Special handling for the 'ancestor' action
+  if (
+    action &&
+    actionTypes.ANCESTOR in action &&
+    Array.isArray(action[actionTypes.ANCESTOR])
+  ) {
+    updatedState = handleAncestor(updatedState, selectedOption);
+    if (updatedState.popup.visible) return updatedState;
+  }
+
+  // General handling for all other actions
+  for (const actionName in actionHandlers) {
+    // Ensure 'action' is not null before accessing its properties
+    if (
+      action &&
+      action[actionName] != null &&
+      !(Array.isArray(action[actionName]) && action[actionName].length === 0)
+    ) {
+      updatedState = actionHandlers[actionName](updatedState, selectedOption);
+      if (updatedState.popup.visible) return updatedState;
     }
   }
 
@@ -61,6 +60,7 @@ export function handleOptionChange(state, selectedOption) {
 }
 
 export function handlePopupConfirm(state, selectedOption) {
+  console.log("line 56 in handlePopupConfirm");
   let updatedState = { ...state };
   const { action } = selectedOption;
   const {
@@ -84,6 +84,7 @@ export function handlePopupConfirm(state, selectedOption) {
       //Destructure the modifiedRivalChoice to get action & packageOption
       const { action: { packageOption = [] } = {} } = modifiedRivalChoice;
       if (packageOption.length > 0) {
+        //Mark each rival choice unchecked
         modifiedRivalChoice = { ...modifiedRivalChoice, checked: false };
         updatedState = handlePackageOption(updatedState, modifiedRivalChoice); //This removes the components of the rival option
       }

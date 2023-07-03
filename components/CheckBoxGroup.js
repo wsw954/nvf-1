@@ -7,10 +7,10 @@ export default function CheckBoxGroup({
   selectedOptions,
 }) {
   const handleCheckBoxChange = (event) => {
-    const selectedName = event.target.value;
     const isChecked = event.target.checked;
+    const selectedSerial = event.target.value;
     const selectedOption = choices.find(
-      (option) => option.name === selectedName
+      (option) => option.serial === selectedSerial
     );
 
     if (selectedOption && onChange) {
@@ -34,10 +34,10 @@ export default function CheckBoxGroup({
               type="checkbox"
               id={`${choice.name}`}
               name={choice.name}
-              value={choice.name}
+              value={choice.serial}
               onChange={handleCheckBoxChange}
               checked={selectedOptions.some(
-                (selectedOption) => selectedOption.name === choice.name
+                (selectedOption) => selectedOption.serial === choice.serial
               )}
               data-serial={choice.serial}
             />
