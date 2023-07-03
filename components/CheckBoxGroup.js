@@ -17,7 +17,7 @@ export default function CheckBoxGroup({
       const modifiedSelectedOption = {
         ...selectedOption,
         categoryName: categoryName,
-        type: "Multiple",
+        type: "CheckBoxGroup",
         checked: isChecked,
       };
       onChange(modifiedSelectedOption);
@@ -28,20 +28,21 @@ export default function CheckBoxGroup({
     <div className={styles.optionsCheckBoxGroup}>
       <label className={styles.optionsCheckBoxGroupLabel}>{categoryName}</label>
       <div className={styles.checkBoxContainer}>
-        {choices.map((option, index) => (
-          <div key={option.name} className={styles.checkBoxItem}>
+        {choices.map((choice, index) => (
+          <div key={choice.name} className={styles.checkBoxItem}>
             <input
               type="checkbox"
-              id={`${option.name}`}
-              name={option.name}
-              value={option.name}
+              id={`${choice.name}`}
+              name={choice.name}
+              value={choice.name}
               onChange={handleCheckBoxChange}
               checked={selectedOptions.some(
-                (selectedOption) => selectedOption.name === option.name
+                (selectedOption) => selectedOption.name === choice.name
               )}
+              data-serial={choice.serial}
             />
-            <label htmlFor={`${option.name}-${index}`}>
-              {option.name + "- $" + option.price}
+            <label htmlFor={`${choice.name}-${index}`}>
+              {choice.name + "- $" + choice.price}
             </label>
           </div>
         ))}

@@ -10,16 +10,16 @@ export default function Dropdown({
   const [previousOption, setPreviousOption] = useState(null);
 
   const handleDropdownChange = (event) => {
-    const selectedName = event.target.value;
+    const selectedSerial = event.target.value;
     const selectedOption = choices.find(
-      (option) => option.name === selectedName
+      (choice) => String(choice.serial) === selectedSerial
     );
 
     if (selectedOption && onChange) {
       const modifiedSelectedOption = {
         ...selectedOption,
         categoryName: categoryName,
-        type: "Single",
+        type: "Dropdown",
         checked: true,
         prevValue: previousOption ? previousOption : null,
       };
@@ -32,7 +32,7 @@ export default function Dropdown({
     categoryName.toLowerCase() !== "make" &&
     categoryName.toLowerCase() !== "model";
 
-  let selectedValue = selectedOptions[0]?.name || "";
+  let selectedValueSerial = selectedOptions[0]?.serial || 0;
 
   return (
     <div className={styles.optionsDropdownInputGroup}>
@@ -46,12 +46,12 @@ export default function Dropdown({
         id={`dropdown-${categoryName}`}
         className={styles.optionsDropdownSelect}
         onChange={handleDropdownChange}
-        value={selectedValue}
+        value={selectedValueSerial}
       >
         <option value="">Select {categoryName}</option>
-        {choices.map((option, index) => (
-          <option key={index} value={option.name}>
-            {option.name + (displayPrice ? " -$" + option.price : "")}
+        {choices.map((choice, index) => (
+          <option key={index} value={choice.serial}>
+            {choice.name + (displayPrice ? " -$" + choice.price : "")}
           </option>
         ))}
       </select>

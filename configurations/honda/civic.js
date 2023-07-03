@@ -1,4 +1,6 @@
 import data from "../../data/honda/civicTest";
+import Dropdown from "../../components/Dropdown";
+import CheckBoxGroup from "../../components/CheckBoxGroup";
 
 export function initialChoices(currentState) {
   const choicesAvailable = data.find(
@@ -10,10 +12,18 @@ export function initialChoices(currentState) {
 
 export function handleOptionChange(state, selectedOption) {
   let updatedState = { ...state };
-  const { action, checked } = selectedOption;
+  const { categoryName, action = {}, checked, serial } = selectedOption;
+  // const categoryGroup = state.selectedChoices.find(
+  //   (item) => item.categoryName === categoryName
+  // );
+  // if (categoryGroup) {
+  //   const choice = categoryGroup.choices.find((item) => item.serial === serial);
+  //   console.log(selectedOption);
+  //   console.log(choice);
+  // }
 
-  if (action != null) {
-    //Destructure the action object, assigning null to any object that doesn't exists
+  if (action != null && Object.keys(action).length !== 0) {
+    //Destructure the action object, assigning null to any object that doesn't exist
     const {
       ancestor = null,
       sponsor = null,
@@ -33,39 +43,49 @@ export function handleOptionChange(state, selectedOption) {
     if (rivals != null && checked) {
       updatedState = handleRival(updatedState, selectedOption);
     }
-    if (remover != null && remover.length > 0) {
-      updatedState = handleRemover(updatedState, selectedOption);
-    }
-
     if (packageOption != null && packageOption.length > 0) {
       updatedState = handlePackageOption(updatedState, selectedOption);
+    }
+    if (remover != null && remover.length > 0) {
+      updatedState = handleRemover(updatedState, selectedOption);
     }
     if (parent != null) {
       updatedState = handleParent(updatedState, selectedOption);
     }
-
     if (sibling != null) {
       updatedState = handleSibling(updatedState, selectedOption);
     }
   }
+
   return handleRegularOptionChange(updatedState, selectedOption);
 }
 
 export function handlePopupConfirm(state, selectedOption) {
   let updatedState = { ...state };
-  const { action, checked } = selectedOption;
+  const { action } = selectedOption;
+  const {
+    rivals = null,
+    parent = null,
+    sibling = null,
+    packageOption = null,
+  } = action;
+  //Loop for rivals
+  if (rivals) {
+    for (let rival of rivals) {
+      const rivalChoice = getChoices(rival);
+      let modifiedRivalChoice = {
+        ...rivalChoice[0].choices[0],
+        categoryName: rivalChoice[0].categoryName,
+      };
 
-  if (action != null) {
-    const { rivals = null, sibling = null } = action;
-    //Handle rival selection
-    if (rivals != null && checked) {
-      for (let rival of rivals) {
-        const rivalChoice = getChoices(rival);
-        const modifiedChoice = {
-          ...rivalChoice[0].choices[0],
-          categoryName: rivalChoice[0].categoryName,
-        };
-        updatedState = removeSelectedChoices(updatedState, modifiedChoice);
+      // console.log(modifiedRivalChoice); //This is the rival option
+      // console.log(selectedOption); //This is the new option selected
+      updatedState = removeSelectedChoices(updatedState, modifiedRivalChoice); //This removes the rival choice
+      //Destructure the modifiedRivalChoice to get action & packageOption
+      const { action: { packageOption = [] } = {} } = modifiedRivalChoice;
+      if (packageOption.length > 0) {
+        modifiedRivalChoice = { ...modifiedRivalChoice, checked: false };
+        updatedState = handlePackageOption(updatedState, modifiedRivalChoice); //This removes the components of the rival option
       }
     }
   }
@@ -77,13 +97,13 @@ export function handlePopupCancel(state, selectedOption) {
   let updatedState = { ...state };
 
   const { action, checked } = selectedOption;
-  if (action != null) {
-    const { rivals = null, sibling = null } = action;
-    //Handle rival selection
-    if (rivals != null && checked) {
-      updatedState = removeSelectedChoices(updatedState, selectedOption);
-    }
+
+  const { rivals = null, sibling = null } = action;
+  //Handle rival selection
+  if (rivals != null && checked) {
+    updatedState = removeSelectedChoices(updatedState, selectedOption);
   }
+
   return { ...updatedState, popup: false, message: "", selectedOption: null };
 }
 
@@ -148,8 +168,38 @@ function handleRival(state, selectedOption) {
   } else {
     return { ...state };
   }
+}
 
-  //Will add code here to update the state with the rivalStatus object
+function handlePackageOption(state, selectedOption) {
+  let updatedState = { ...state };
+  const {
+    action: { packageOption = [] } = {},
+    checked,
+    serial,
+  } = selectedOption || {};
+
+  for (let option of packageOption) {
+    const componentChoice = getChoices(option);
+    const modifiedComponentChoice = {
+      ...componentChoice[0].choices[0],
+      categoryName: componentChoice[0].categoryName,
+      type: componentChoice[0].component.name,
+    };
+    if (checked) {
+      modifiedComponentChoice.packageID = serial;
+      updatedState = addSelectedChoices(updatedState, modifiedComponentChoice);
+    } else {
+      if ("packageID" in modifiedComponentChoice) {
+        delete modifiedComponentChoice.packageID;
+      }
+      updatedState = removeSelectedChoices(
+        updatedState,
+        modifiedComponentChoice
+      );
+    }
+  }
+
+  return { ...updatedState };
 }
 
 function handleRemover(state, selectedOption) {
@@ -180,20 +230,6 @@ function handleRemover(state, selectedOption) {
   };
 }
 
-function handlePackageOption(state, selectedOption) {
-  const {
-    categoryName,
-    action: { packageOption } = {},
-    serial,
-    checked,
-  } = selectedOption;
-  let packageComponents = getChoices(packageOption);
-  if (checked) {
-    return { ...state };
-  } else {
-    return { ...state };
-  }
-}
 function handleParent(state, selectedOption) {
   let newState = { ...state, parentProcessed: true };
   return newState;
@@ -205,7 +241,7 @@ function handleSibling(state, selectedOption) {
 }
 
 function handleRegularOptionChange(state, selectedOption) {
-  const { categoryName, type, action, serial, checked } = selectedOption;
+  const { checked } = selectedOption;
   if (checked) {
     return addSelectedChoices(state, selectedOption);
   } else {
@@ -256,52 +292,99 @@ function checkIfRivalSelected(selectedChoices, selectedOption) {
   };
 }
 
+// function addSelectedChoices(state, selectedOption) {
+//   const { categoryName, type, serial } = selectedOption;
+//   console.log(state.availableChoices);
+//   console.log(selectedOption);
+
+//   const category = data.find((item) => item.categoryName === categoryName);
+//   let updatedSelectedChoices = [...state.selectedChoices]; // Make a copy of selectedChoices
+
+//   if (category) {
+//     const choice = category.choices.find((item) => item.serial === serial);
+
+//     if (choice) {
+//       const stateChoiceIndex = updatedSelectedChoices.findIndex(
+//         (item) => item.categoryName === categoryName
+//       );
+
+//       if (type === "Dropdown") {
+//         if (stateChoiceIndex !== -1) {
+//           // Replace choices for the existing category
+//           updatedSelectedChoices[stateChoiceIndex].choices = [choice];
+//         } else {
+//           // Add a new category to selectedChoices
+//           updatedSelectedChoices.push({
+//             categoryName: category.categoryName,
+//             component: category.component,
+//             choices: [choice],
+//           });
+//         }
+//       } else if (type === "CheckBoxGroup") {
+//         if (stateChoiceIndex !== -1) {
+//           const existingOptionIndex = updatedSelectedChoices[
+//             stateChoiceIndex
+//           ].choices.findIndex(
+//             (option) => option.serial === selectedOption.serial
+//           );
+//           if (existingOptionIndex === -1) {
+//             updatedSelectedChoices[stateChoiceIndex].choices.push(choice);
+//           }
+//         } else {
+//           updatedSelectedChoices.push({
+//             categoryName: category.categoryName,
+//             component: category.component,
+//             choices: [choice],
+//           });
+//         }
+//       }
+//     }
+//   }
+//   return { ...state, selectedChoices: updatedSelectedChoices };
+// }
+
 function addSelectedChoices(state, selectedOption) {
   const { categoryName, type, serial } = selectedOption;
 
-  const category = data.find((item) => item.categoryName === categoryName);
   let updatedSelectedChoices = [...state.selectedChoices]; // Make a copy of selectedChoices
 
-  if (category) {
-    const choice = category.choices.find((item) => item.serial === serial);
+  if (selectedOption) {
+    const stateChoiceIndex = updatedSelectedChoices.findIndex(
+      (item) => item.categoryName === categoryName
+    );
 
-    if (choice) {
-      const stateChoiceIndex = updatedSelectedChoices.findIndex(
-        (item) => item.categoryName === categoryName
-      );
-
-      if (type === "Single") {
-        if (stateChoiceIndex !== -1) {
-          // Replace choices for the existing category
-          updatedSelectedChoices[stateChoiceIndex].choices = [choice];
-        } else {
-          // Add a new category to selectedChoices
-          updatedSelectedChoices.push({
-            categoryName: category.categoryName,
-            component: category.component,
-            choices: [choice],
-          });
+    if (type === "Dropdown") {
+      if (stateChoiceIndex !== -1) {
+        // Replace choices for the existing category
+        updatedSelectedChoices[stateChoiceIndex].choices = [selectedOption];
+      } else {
+        // Add a new category to selectedChoices
+        updatedSelectedChoices.push({
+          categoryName: selectedOption.categoryName,
+          component: Dropdown,
+          choices: [selectedOption],
+        });
+      }
+    } else if (type === "CheckBoxGroup") {
+      if (stateChoiceIndex !== -1) {
+        const existingOptionIndex = updatedSelectedChoices[
+          stateChoiceIndex
+        ].choices.findIndex(
+          (option) => option.serial === selectedOption.serial
+        );
+        if (existingOptionIndex === -1) {
+          updatedSelectedChoices[stateChoiceIndex].choices.push(selectedOption);
         }
-      } else if (type === "Multiple") {
-        if (stateChoiceIndex !== -1) {
-          const existingOptionIndex = updatedSelectedChoices[
-            stateChoiceIndex
-          ].choices.findIndex(
-            (option) => option.serial === selectedOption.serial
-          );
-          if (existingOptionIndex === -1) {
-            updatedSelectedChoices[stateChoiceIndex].choices.push(choice);
-          }
-        } else {
-          updatedSelectedChoices.push({
-            categoryName: category.categoryName,
-            component: category.component,
-            choices: [choice],
-          });
-        }
+      } else {
+        updatedSelectedChoices.push({
+          categoryName: selectedOption.categoryName,
+          component: CheckBoxGroup,
+          choices: [selectedOption],
+        });
       }
     }
   }
+
   return { ...state, selectedChoices: updatedSelectedChoices };
 }
 

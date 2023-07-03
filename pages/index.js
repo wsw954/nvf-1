@@ -35,14 +35,14 @@ export default function Bizzlle() {
   }, [selectedMake]);
 
   const handleMakeChange = async (selectedOption) => {
-    setSelectedMake(selectedOption.name);
+    setSelectedMake(selectedOption);
     setSelectedModel({ name: "", layout: "" });
     setLayout(null);
     fetchData(`/api/models?make=${selectedOption.name}`, setModels);
   };
 
   function handleModelChange(selectedOption) {
-    if (!selectedOption || selectedOption.name === "") {
+    if (!selectedOption || selectedOption.serial === "") {
       setSelectedModel({ name: "", layout: "" });
       setLayout(null);
       return;
@@ -81,17 +81,27 @@ export default function Bizzlle() {
       <div className={styles.form}>
         <Dropdown
           categoryName="Make"
-          choices={makes.map((make) => ({ name: make }))}
+          choices={makes.map((make, index) => ({
+            name: make,
+            serial: index + 1,
+          }))} //Change to pass a serial
           onChange={handleMakeChange}
-          selectedOptions={[{ name: selectedMake }]}
+          selectedOptions={[
+            { name: selectedMake.name, serial: selectedMake.serial },
+          ]}
         />
       </div>
       {selectedMake && (
         <Dropdown
           categoryName="Model"
-          choices={models}
+          choices={models.map((model, index) => ({
+            ...model,
+            serial: `${selectedMake.name}-${index + 1}`,
+          }))} //Change to pass serial
           onChange={handleModelChange}
-          selectedOptions={[{ name: selectedModel.name }]}
+          selectedOptions={[
+            { name: selectedModel.name, serial: selectedMake.serial },
+          ]}
         />
       )}
       {Layout && (

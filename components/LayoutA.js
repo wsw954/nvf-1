@@ -22,7 +22,7 @@ export default function LayoutA({ selectedMake, selectedModel }) {
     async function loadConfiguration() {
       try {
         const module = await import(
-          `../configurations/${selectedMake.toLowerCase()}/${kebabCaseModelName}`
+          `../configurations/${selectedMake.name.toLowerCase()}/${kebabCaseModelName}`
         );
         setConfiguration(module);
         dispatch({
@@ -31,7 +31,7 @@ export default function LayoutA({ selectedMake, selectedModel }) {
         });
       } catch (error) {
         console.error(
-          `Failed to load configuration for ${selectedMake} ${selectedModel}: `,
+          `Failed to load configuration for ${selectedMake.name} ${selectedModel}: `,
           error
         );
         // Additional code for error display
@@ -40,6 +40,7 @@ export default function LayoutA({ selectedMake, selectedModel }) {
 
     loadConfiguration();
   }, [selectedMake, selectedModel]);
+
   const handleOptionChange = useCallback(
     (selectedOption) => {
       if (configuration) {
