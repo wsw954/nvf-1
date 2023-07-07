@@ -115,7 +115,10 @@ const CivicData = [
         price: 420,
         serial: "pk1",
         descendent: ["tt1", "tt2", "tt3", "tt4"],
-        action: { rivals: ["pk2"], packageOption: ["ea1", "ea2", "ea3"] },
+        action: {
+          rivals: ["pk2"],
+          packageOption: ["ea1", "ea2", "ea3", "pw2"],
+        },
       },
       {
         name: "Package 2",

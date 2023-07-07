@@ -49,11 +49,24 @@ export default function Dropdown({
         value={selectedValueSerial}
       >
         <option value="">Select {categoryName}</option>
-        {choices.map((choice, index) => (
-          <option key={index} value={choice.serial}>
-            {choice.name + (displayPrice ? " -$" + choice.price : "")}
-          </option>
-        ))}
+        {choices.map((choice, index) => {
+          const currentSelectedOption = selectedOptions.find(
+            (selectedOption) => selectedOption.serial === choice.serial
+          );
+          const hasPackageID =
+            currentSelectedOption && "packageID" in currentSelectedOption; //Check if part of package
+          const inputName = hasPackageID
+            ? `${choice.name}-Included in Package`
+            : choice.name; //Render the change in name displayed for a package component
+          const displayPriceValue = hasPackageID
+            ? currentSelectedOption.price
+            : choice.price; //Display Price difference for package component
+          return (
+            <option key={index} value={choice.serial}>
+              {inputName + (displayPrice ? " -$" + displayPriceValue : "")}
+            </option>
+          );
+        })}
       </select>
     </div>
   );

@@ -21,6 +21,7 @@ export const actionTypes = {
 };
 
 export function handleOptionChange(state, selectedOption) {
+  console.log(selectedOption);
   let updatedState = { ...state };
   const { action } = selectedOption || {};
 

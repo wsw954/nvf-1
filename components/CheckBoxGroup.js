@@ -6,12 +6,51 @@ export default function CheckBoxGroup({
   onChange,
   selectedOptions,
 }) {
+  const getSelectedOption = (selectedSerial, choices) => {
+    return choices.find((option) => option.serial === selectedSerial);
+  };
+
+  const getUnselectedOptionPackageId = (selectedSerial, selectedOptions) => {
+    const unselectedOption = selectedOptions.find(
+      (selectedOption) => selectedOption.serial === selectedSerial
+    );
+
+    if (unselectedOption && "packageID" in unselectedOption) {
+      return unselectedOption.packageID;
+    }
+
+    return null;
+  };
+
+  const getCurrentSelectedOption = (choiceSerial) => {
+    return selectedOptions.find(
+      (selectedOption) => selectedOption.serial === choiceSerial
+    );
+  };
+
+  const hasPackageID = (currentSelectedOption) => {
+    return currentSelectedOption && "packageID" in currentSelectedOption;
+  };
+
+  const getInputName = (choiceName, hasPackageID) => {
+    return hasPackageID ? `${choiceName}-Included in Package` : choiceName;
+  };
+
+  const getDisplayPrice = (
+    currentSelectedOption,
+    choicePrice,
+    hasPackageID
+  ) => {
+    return hasPackageID ? currentSelectedOption.price : choicePrice;
+  };
+
   const handleCheckBoxChange = (event) => {
     const isChecked = event.target.checked;
     const selectedSerial = event.target.value;
-    const selectedOption = choices.find(
-      (option) => option.serial === selectedSerial
-    );
+    const selectedOption = getSelectedOption(selectedSerial, choices);
+    let packageID = isChecked
+      ? null
+      : getUnselectedOptionPackageId(selectedSerial, selectedOptions);
 
     if (selectedOption && onChange) {
       const modifiedSelectedOption = {
@@ -19,6 +58,7 @@ export default function CheckBoxGroup({
         categoryName: categoryName,
         type: "CheckBoxGroup",
         checked: isChecked,
+        ...(packageID && { packageID: packageID }),
       };
       onChange(modifiedSelectedOption);
     }
@@ -29,17 +69,14 @@ export default function CheckBoxGroup({
       <label className={styles.optionsCheckBoxGroupLabel}>{categoryName}</label>
       <div className={styles.checkBoxContainer}>
         {choices.map((choice, index) => {
-          const currentSelectedOption = selectedOptions.find(
-            (selectedOption) => selectedOption.serial === choice.serial
+          const currentSelectedOption = getCurrentSelectedOption(choice.serial);
+          const hasPackageIDValue = hasPackageID(currentSelectedOption);
+          const inputName = getInputName(choice.name, hasPackageIDValue);
+          const displayPrice = getDisplayPrice(
+            currentSelectedOption,
+            choice.price,
+            hasPackageIDValue
           );
-          const hasPackageID =
-            currentSelectedOption && "packageID" in currentSelectedOption; //Check if part of package
-          const inputName = hasPackageID
-            ? `${choice.name}-Included in Package`
-            : choice.name; //Notification if currentSelectedOption is part of package
-          const displayPrice = hasPackageID
-            ? currentSelectedOption.price
-            : choice.price; //Display Price different for package component
 
           return (
             <div key={choice.name} className={styles.checkBoxItem}>
