@@ -115,14 +115,14 @@ const CivicData = [
         price: 420,
         serial: "pk1",
         descendent: ["tt1", "tt2", "tt3", "tt4"],
-        action: { packageOption: ["ea1", "ea2", "ea3"], rivals: ["pk2"] },
+        action: { rivals: ["pk2"], packageOption: ["ea1", "ea2", "ea3"] },
       },
       {
         name: "Package 2",
         price: 370,
         serial: "pk2",
         descendent: ["tt1", "tt2", "tt3", "tt4"],
-        action: { packageOption: ["ea1", "ia1", "ia2"], rivals: ["pk1"] },
+        action: { rivals: ["pk1"], packageOption: ["ea1", "ia1", "ia2"] },
       },
       {
         name: "Package 3",
@@ -219,14 +219,14 @@ const CivicData = [
     choices: [
       {
         name: "Int Accessory 1",
-        price: 0,
+        price: 100,
         serial: "ia1",
         descendent: ["tt1", "tt2", "tt3", "tt4"],
         action: null,
       },
       {
         name: "Int Accessory 2",
-        price: 0,
+        price: 150,
         serial: "ia2",
         descendent: ["tt1", "tt2", "tt3", "tt4"],
         action: null,

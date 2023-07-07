@@ -8,7 +8,11 @@ export default function Bizzlle() {
   const [makes, setMakes] = useState([]);
   const [selectedMake, setSelectedMake] = useState("");
   const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState({ name: "", layout: "" });
+  const [selectedModel, setSelectedModel] = useState({
+    name: "",
+    layout: "",
+    serial: "",
+  });
   const [Layout, setLayout] = useState(null);
   const [error, setError] = useState(null);
 
@@ -43,32 +47,25 @@ export default function Bizzlle() {
 
   function handleModelChange(selectedOption) {
     if (!selectedOption || selectedOption.serial === "") {
-      setSelectedModel({ name: "", layout: "" });
+      setSelectedModel({ name: "", layout: "", serial: "" });
       setLayout(null);
       return;
-    }
-    const selectedModelObj = models.find(
-      (model) => model.name === selectedOption.name
-    );
-
-    if (!selectedModelObj) {
-      setSelectedModel({ name: "", layout: "" });
+    } else {
+      setSelectedModel(selectedOption);
       setLayout(null);
-      return;
-    }
 
-    setSelectedModel(selectedModelObj);
-    const DynamicLayout = dynamic(
-      () =>
-        import(`/components/${selectedModelObj.layout}`).catch(() => ({
-          default: () => <div>Error loading layout</div>,
-        })),
-      {
-        loading: () => <div>Loading layout...</div>,
-        ssr: false,
-      }
-    );
-    setLayout(() => DynamicLayout);
+      const DynamicLayout = dynamic(
+        () =>
+          import(`/components/${selectedOption.layout}`).catch(() => ({
+            default: () => <div>Error loading layout</div>,
+          })),
+        {
+          loading: () => <div>Loading layout...</div>,
+          ssr: false,
+        }
+      );
+      setLayout(() => DynamicLayout);
+    }
   }
 
   if (error) {
@@ -84,7 +81,7 @@ export default function Bizzlle() {
           choices={makes.map((make, index) => ({
             name: make,
             serial: index + 1,
-          }))} //Change to pass a serial
+          }))} //Pass a serial
           onChange={handleMakeChange}
           selectedOptions={[
             { name: selectedMake.name, serial: selectedMake.serial },
@@ -97,10 +94,10 @@ export default function Bizzlle() {
           choices={models.map((model, index) => ({
             ...model,
             serial: `${selectedMake.name}-${index + 1}`,
-          }))} //Change to pass serial
+          }))} //Pass serial
           onChange={handleModelChange}
           selectedOptions={[
-            { name: selectedModel.name, serial: selectedMake.serial },
+            { name: selectedModel.name, serial: selectedModel.serial },
           ]}
         />
       )}

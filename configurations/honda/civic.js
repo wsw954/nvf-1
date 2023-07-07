@@ -22,32 +22,33 @@ export const actionTypes = {
 
 export function handleOptionChange(state, selectedOption) {
   let updatedState = { ...state };
-  const { action = {} } = selectedOption || {};
+  const { action } = selectedOption || {};
 
   const actionHandlers = {
     [actionTypes.SPONSOR]: handleSponsor,
     [actionTypes.REMOVER]: handleRemover,
+    [actionTypes.RIVALS]: handleRival,
     [actionTypes.PACKAGE_OPTION]: handlePackageOption,
     [actionTypes.PARENT]: handleParent,
-    [actionTypes.RIVALS]: handleRival,
     [actionTypes.SIBLING]: handleSibling,
   };
 
-  // Special handling for the 'ancestor' action
+  if (!action) {
+    return handleRegularOptionChange(updatedState, selectedOption);
+  }
+
   if (
-    action &&
     actionTypes.ANCESTOR in action &&
     Array.isArray(action[actionTypes.ANCESTOR])
   ) {
     updatedState = handleAncestor(updatedState, selectedOption);
     if (updatedState.popup.visible) return updatedState;
+    return handleRegularOptionChange(updatedState, selectedOption);
   }
 
-  // General handling for all other actions
-  for (const actionName in actionHandlers) {
-    // Ensure 'action' is not null before accessing its properties
+  for (const actionName in action) {
     if (
-      action &&
+      actionName in actionHandlers &&
       action[actionName] != null &&
       !(Array.isArray(action[actionName]) && action[actionName].length === 0)
     ) {
@@ -56,11 +57,10 @@ export function handleOptionChange(state, selectedOption) {
     }
   }
 
-  return handleRegularOptionChange(updatedState, selectedOption);
+  return updatedState;
 }
 
 export function handlePopupConfirm(state, selectedOption) {
-  console.log("line 56 in handlePopupConfirm");
   let updatedState = { ...state };
   const { action } = selectedOption;
   const {
@@ -78,8 +78,6 @@ export function handlePopupConfirm(state, selectedOption) {
         categoryName: rivalChoice[0].categoryName,
       };
 
-      // console.log(modifiedRivalChoice); //This is the rival option
-      // console.log(selectedOption); //This is the new option selected
       updatedState = removeSelectedChoices(updatedState, modifiedRivalChoice); //This removes the rival choice
       //Destructure the modifiedRivalChoice to get action & packageOption
       const { action: { packageOption = [] } = {} } = modifiedRivalChoice;
@@ -89,6 +87,9 @@ export function handlePopupConfirm(state, selectedOption) {
         updatedState = handlePackageOption(updatedState, modifiedRivalChoice); //This removes the components of the rival option
       }
     }
+  }
+  if (packageOption) {
+    updatedState = handlePackageOption(updatedState, selectedOption);
   }
 
   return { ...updatedState, popup: false, message: "", selectedOption: null };
@@ -141,7 +142,8 @@ function handleSponsor(state, selectedOption) {
     (choices, choice) => addAvailableChoices(state, choice),
     [...state.availableChoices]
   );
-  return { ...state, availableChoices: updatedAvailableChoices };
+  let updatedState = { ...state, availableChoices: updatedAvailableChoices };
+  return handleRegularOptionChange(updatedState, selectedOption);
 }
 
 //Helper function when rival option selected
@@ -181,11 +183,15 @@ function handlePackageOption(state, selectedOption) {
 
   for (let option of packageOption) {
     const componentChoice = getChoices(option);
+
     const modifiedComponentChoice = {
       ...componentChoice[0].choices[0],
       categoryName: componentChoice[0].categoryName,
       type: componentChoice[0].component.name,
     };
+    // Set price to zero
+    modifiedComponentChoice.price = 0;
+
     if (checked) {
       modifiedComponentChoice.packageID = serial;
       updatedState = addSelectedChoices(updatedState, modifiedComponentChoice);
@@ -200,7 +206,7 @@ function handlePackageOption(state, selectedOption) {
     }
   }
 
-  return { ...updatedState };
+  return handleRegularOptionChange(updatedState, selectedOption);
 }
 
 function handleRemover(state, selectedOption) {
@@ -223,12 +229,13 @@ function handleRemover(state, selectedOption) {
       ),
     }))
     .filter((category) => category.choices.length > 0);
-
-  return {
+  let updatedState = {
     ...state,
     availableChoices: updatedAvailableChoices,
     selectedChoices: updatedSelectedChoices,
   };
+
+  return handleRegularOptionChange(updatedState, selectedOption);
 }
 
 function handleParent(state, selectedOption) {
@@ -292,57 +299,6 @@ function checkIfRivalSelected(selectedChoices, selectedOption) {
     rivalSelectedChoice,
   };
 }
-
-// function addSelectedChoices(state, selectedOption) {
-//   const { categoryName, type, serial } = selectedOption;
-//   console.log(state.availableChoices);
-//   console.log(selectedOption);
-
-//   const category = data.find((item) => item.categoryName === categoryName);
-//   let updatedSelectedChoices = [...state.selectedChoices]; // Make a copy of selectedChoices
-
-//   if (category) {
-//     const choice = category.choices.find((item) => item.serial === serial);
-
-//     if (choice) {
-//       const stateChoiceIndex = updatedSelectedChoices.findIndex(
-//         (item) => item.categoryName === categoryName
-//       );
-
-//       if (type === "Dropdown") {
-//         if (stateChoiceIndex !== -1) {
-//           // Replace choices for the existing category
-//           updatedSelectedChoices[stateChoiceIndex].choices = [choice];
-//         } else {
-//           // Add a new category to selectedChoices
-//           updatedSelectedChoices.push({
-//             categoryName: category.categoryName,
-//             component: category.component,
-//             choices: [choice],
-//           });
-//         }
-//       } else if (type === "CheckBoxGroup") {
-//         if (stateChoiceIndex !== -1) {
-//           const existingOptionIndex = updatedSelectedChoices[
-//             stateChoiceIndex
-//           ].choices.findIndex(
-//             (option) => option.serial === selectedOption.serial
-//           );
-//           if (existingOptionIndex === -1) {
-//             updatedSelectedChoices[stateChoiceIndex].choices.push(choice);
-//           }
-//         } else {
-//           updatedSelectedChoices.push({
-//             categoryName: category.categoryName,
-//             component: category.component,
-//             choices: [choice],
-//           });
-//         }
-//       }
-//     }
-//   }
-//   return { ...state, selectedChoices: updatedSelectedChoices };
-// }
 
 function addSelectedChoices(state, selectedOption) {
   const { categoryName, type, serial } = selectedOption;

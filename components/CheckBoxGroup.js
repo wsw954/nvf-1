@@ -28,24 +28,35 @@ export default function CheckBoxGroup({
     <div className={styles.optionsCheckBoxGroup}>
       <label className={styles.optionsCheckBoxGroupLabel}>{categoryName}</label>
       <div className={styles.checkBoxContainer}>
-        {choices.map((choice, index) => (
-          <div key={choice.name} className={styles.checkBoxItem}>
-            <input
-              type="checkbox"
-              id={`${choice.name}`}
-              name={choice.name}
-              value={choice.serial}
-              onChange={handleCheckBoxChange}
-              checked={selectedOptions.some(
-                (selectedOption) => selectedOption.serial === choice.serial
-              )}
-              data-serial={choice.serial}
-            />
-            <label htmlFor={`${choice.name}-${index}`}>
-              {choice.name + "- $" + choice.price}
-            </label>
-          </div>
-        ))}
+        {choices.map((choice, index) => {
+          const currentSelectedOption = selectedOptions.find(
+            (selectedOption) => selectedOption.serial === choice.serial
+          );
+          const hasPackageID =
+            currentSelectedOption && "packageID" in currentSelectedOption; //Check if part of package
+          const inputName = hasPackageID
+            ? `${choice.name}-Included in Package`
+            : choice.name; //Notification if currentSelectedOption is part of package
+          const displayPrice = hasPackageID
+            ? currentSelectedOption.price
+            : choice.price; //Display Price different for package component
+
+          return (
+            <div key={choice.name} className={styles.checkBoxItem}>
+              <input
+                type="checkbox"
+                id={`${choice.serial}`}
+                name={inputName}
+                value={choice.serial}
+                onChange={handleCheckBoxChange}
+                checked={!!currentSelectedOption}
+              />
+              <label htmlFor={`${choice.name}-${index}`}>
+                {inputName + "- $" + displayPrice}
+              </label>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
