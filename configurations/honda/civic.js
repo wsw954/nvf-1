@@ -21,7 +21,6 @@ export const actionTypes = {
 };
 
 export function handleOptionChange(state, selectedOption) {
-  console.log(selectedOption);
   let updatedState = { ...state };
   const { action } = selectedOption || {};
 
@@ -63,13 +62,26 @@ export function handleOptionChange(state, selectedOption) {
 
 export function handlePopupConfirm(state, selectedOption) {
   let updatedState = { ...state };
-  const { action } = selectedOption;
+  const { action, packageID } = selectedOption;
   const {
     rivals = null,
     parent = null,
     sibling = null,
     packageOption = null,
   } = action;
+
+  //Loop for packageID
+  if (packageID) {
+    //I have to continue to delete both the component AND the parent package
+    const selectedChoices = updatedState.selectedChoices;
+    const packageID = selectedOption.packageID;
+    //Retrieve parent package
+    const parentPackage = selectedChoices.reduce((acc, current) => {
+      if (acc) return acc;
+      return current.choices.find((choice) => choice.serial === packageID);
+    }, null);
+  }
+
   //Loop for rivals
   if (rivals) {
     for (let rival of rivals) {
@@ -99,7 +111,7 @@ export function handlePopupConfirm(state, selectedOption) {
 export function handlePopupCancel(state, selectedOption) {
   let updatedState = { ...state };
 
-  const { action, checked } = selectedOption;
+  const { action, checked, packageID } = selectedOption;
 
   const { rivals = null, sibling = null } = action;
   //Handle rival selection
@@ -249,11 +261,66 @@ function handleSibling(state, selectedOption) {
   return newState;
 }
 
+// helper function to check packageID
+function hasPackageID(option) {
+  return (
+    option &&
+    "packageID" in option &&
+    option.packageID &&
+    option.packageID.trim() !== ""
+  );
+}
+
 function handleRegularOptionChange(state, selectedOption) {
-  const { checked } = selectedOption;
+  const { checked, prevValue } = selectedOption;
+
+  // check if the prevValue or selectedOption have packageID
+  if (hasPackageID(prevValue) || hasPackageID(selectedOption)) {
+    return handlePackageID(state, selectedOption);
+  }
+
   if (checked) {
     return addSelectedChoices(state, selectedOption);
   } else {
+    return removeSelectedChoices(state, selectedOption);
+  }
+}
+
+function handlePackageID(state, selectedOption) {
+  const { name, checked, type, prevValue } = selectedOption;
+
+  let unselectOptionName = "";
+  let packageID = "";
+  let parentPackage = {};
+  const selectedChoices = state.selectedChoices;
+
+  // unify the assignment of variables
+  if (type === "CheckBoxGroup" || type === "Dropdown") {
+    unselectOptionName = type === "CheckBoxGroup" ? name : prevValue.name;
+    packageID =
+      type === "CheckBoxGroup" ? selectedOption.packageID : prevValue.packageID;
+
+    parentPackage = selectedChoices.reduce((acc, current) => {
+      if (acc) return acc;
+      return current.choices.find((choice) => choice.serial === packageID);
+    }, null);
+  }
+
+  if (parentPackage) {
+    return {
+      ...state,
+      popup: {
+        visible: true,
+        message:
+          "Unselecting " +
+          unselectOptionName +
+          " will remove the package- " +
+          parentPackage.name,
+        selectedOption: selectedOption,
+      },
+    };
+  } else {
+    //Parent package not selected
     return removeSelectedChoices(state, selectedOption);
   }
 }
