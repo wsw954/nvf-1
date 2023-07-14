@@ -24,7 +24,6 @@ export function reducer(state, action) {
         popup: action.payload.popup,
       };
     case ACTIONS.POPUP_CANCEL:
-      console.log("Handle POPUP_CANCEL");
       return {
         ...state,
         availableChoices: action.payload.availableChoices,
