@@ -14,10 +14,10 @@ export const actionTypes = {
   ANCESTOR: "ancestor",
   SPONSOR: "sponsor",
   REMOVER: "remover",
+  RIVALS: "rivals",
   PACKAGE_OPTION: "packageOption",
   PARENT: "parent",
-  RIVALS: "rivals",
-  SIBLING: "sibling",
+  CHILD: "child",
 };
 
 export function handleOptionChange(state, selectedOption) {
@@ -29,7 +29,7 @@ export function handleOptionChange(state, selectedOption) {
     [actionTypes.RIVALS]: handleRival,
     [actionTypes.PACKAGE_OPTION]: handlePackageOption,
     [actionTypes.PARENT]: handleParent,
-    [actionTypes.SIBLING]: handleSibling,
+    [actionTypes.CHILD]: handleChild,
   };
 
   //Checks if an unselected option is part of a selected package
@@ -70,17 +70,18 @@ export function handleOptionChange(state, selectedOption) {
 export function handlePopupConfirm(state, selectedOption) {
   let updatedState = { ...state };
   const { action = null, checked, prevValue = null } = selectedOption;
+
   //Assigns empty object if action is null
   const actionNotNull = action || {};
   const {
     rivals = null,
     parent = null,
-    sibling = null,
+    child = null,
     packageOption = null,
   } = actionNotNull;
 
   if (!checked || prevValue) {
-    //Handle option unselected is part of package
+    //Handle an option being unselected which is part of package
     updatedState = handleComponentUnselected(updatedState, selectedOption);
     updatedState = removeSelectedChoices(updatedState, selectedOption);
   }
@@ -92,7 +93,30 @@ export function handlePopupConfirm(state, selectedOption) {
     if (packageOption) {
       updatedState = handlePackageOption(updatedState, selectedOption);
     }
+    if (child) {
+      const parentOption = getChoices(child);
+      const modifiedParentOption = {
+        ...parentOption[0].choices[0],
+        categoryName: parentOption[0].categoryName,
+        type: parentOption[0].component.name,
+      };
+
+      updatedState = addSelectedChoices(updatedState, modifiedParentOption);
+    }
+
     updatedState = addSelectedChoices(updatedState, selectedOption);
+  }
+  //Handles an unselected parent option
+  if (parent && !checked) {
+    //Removes all the selected child options for unselected parent
+    console.log(selectedOption);
+    selectedOption.optionsSelected.map((option) => {
+      option.choices.forEach((choice) => {
+        updatedState = removeSelectedChoices(updatedState, choice);
+      });
+    });
+    //Removes the parent option
+    updatedState = removeSelectedChoices(updatedState, selectedOption);
   }
 
   return { ...updatedState, popup: false, message: "", selectedOption: null };
@@ -193,6 +217,7 @@ function handleAncestor(state, selectedOption) {
 
 function handleSponsor(state, selectedOption) {
   const { categoryName, action: { sponsor } = {}, serial } = selectedOption;
+  //Get options direct from the data file, since
   let recipientChoices = getChoices(sponsor);
 
   let updatedAvailableChoices = recipientChoices.reduce(
@@ -205,29 +230,27 @@ function handleSponsor(state, selectedOption) {
 
 //Helper function when rival option selected
 function handleRival(state, selectedOption) {
-  const { action: { rival = [] } = {} } = selectedOption;
-  const rivalStatus = checkIfRivalSelected(
-    state.selectedChoices,
-    selectedOption
-  );
-
-  if (rivalStatus.isSelected) {
-    //Update the Popup and return
-    return {
-      ...state,
-      popup: {
-        visible: true,
-        message:
-          "Selecting " +
-          selectedOption.name +
-          " will remove " +
-          rivalStatus.rivalSelectedChoice[0].choices[0].name,
-        selectedOption: selectedOption,
-      },
-    };
-  } else {
-    return { ...state };
+  const { action: { rivals = [] } = {}, checked } = selectedOption;
+  let updatedState = { ...state };
+  if (checked) {
+    const rivalStatus = checkIfOptionsSelected(updatedState, rivals);
+    if (rivalStatus.isSelected) {
+      //Update the Popup and return
+      updatedState = {
+        ...updatedState,
+        popup: {
+          visible: true,
+          message:
+            "Selecting " +
+            selectedOption.name +
+            " will remove " +
+            rivalStatus.optionsSelected[0].choices[0].name,
+          selectedOption: selectedOption,
+        },
+      };
+    }
   }
+  return updatedState;
 }
 
 function handlePackageOption(state, selectedOption) {
@@ -298,14 +321,72 @@ function handleRemover(state, selectedOption) {
 }
 
 function handleParent(state, selectedOption) {
-  let newState = { ...state, parentProcessed: true };
-  return newState;
+  let updatedState = { ...state };
+  const { action: { parent = [] } = {}, checked } = selectedOption || {};
+
+  if (checked) {
+    updatedState = addSelectedChoices(state, selectedOption);
+  } else {
+    const childStatus = checkIfOptionsSelected(updatedState, parent);
+    if (childStatus.isSelected) {
+      // Create a new selectedOption object including optionsSelected
+      const modifiedSelectedOption = {
+        ...selectedOption,
+        optionsSelected: childStatus.optionsSelected,
+      };
+      // Gather all 'choices.name' for each object in 'optionsSelected'
+      const allChoicesNames = childStatus.optionsSelected.flatMap((option) =>
+        option.choices.map((choice) => choice.name)
+      );
+      return {
+        ...updatedState,
+        popup: {
+          visible: true,
+          message:
+            "Unselecting " +
+            selectedOption.name +
+            " will also unselect:  " +
+            allChoicesNames.join(", "),
+          selectedOption: modifiedSelectedOption,
+        },
+      };
+    }
+    updatedState = removeSelectedChoices(updatedState, selectedOption);
+  }
+  return updatedState;
 }
 
-function handleSibling(state, selectedOption) {
-  let newState = { ...state, siblingProcessed: true };
-  return newState;
+function handleChild(state, selectedOption) {
+  let updatedState = { ...state };
+  const { action: { child = [] } = {}, checked } = selectedOption || {};
+  if (checked) {
+    const parentStatus = checkIfOptionsSelected(updatedState, child);
+    if (parentStatus.isSelected) {
+      updatedState = addSelectedChoices(updatedState, selectedOption);
+    } else {
+      //Update the Popup
+      const parentOption = getChoices(child);
+      updatedState = {
+        ...updatedState,
+        popup: {
+          visible: true,
+          message:
+            "To Select " +
+            selectedOption.name +
+            " you must also select " +
+            parentOption[0].choices[0].name,
+          selectedOption: selectedOption,
+        },
+      };
+    }
+  } else {
+    updatedState = removeSelectedChoices(updatedState, selectedOption);
+  }
+  return updatedState;
 }
+
+//Helper function
+function createParentMessage() {}
 
 // helper function to check packageID
 function hasPackageID(option) {
@@ -407,6 +488,21 @@ function checkIfRivalSelected(selectedChoices, selectedOption) {
   return {
     isSelected,
     rivalSelectedChoice,
+  };
+}
+
+//Helper function
+function checkIfOptionsSelected(state, array) {
+  const optionsSelected = state.selectedChoices
+    .map((item) => ({
+      ...item,
+      choices: item.choices.filter((choice) => array.includes(choice.serial)),
+    }))
+    .filter((item) => item.choices.length > 0);
+  const isSelected = optionsSelected.length > 0;
+  return {
+    isSelected,
+    optionsSelected,
   };
 }
 

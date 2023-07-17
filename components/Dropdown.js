@@ -46,11 +46,6 @@ export default function Dropdown({
   const handleDropdownChange = (event) => {
     const selectedSerial = event.target.value;
     const selectedOption = getSelectedOption(selectedSerial, choices);
-    if (categoryName === "Powertrain") {
-      // console.log(selectedOptions[0]);
-      // console.log(selectedOption);
-      // console.log(previousOption);
-    }
 
     if (selectedOption && onChange) {
       const modifiedSelectedOption = {
