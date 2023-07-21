@@ -53,6 +53,7 @@ export default function CheckBoxGroup({
       : getUnselectedOptionPackageId(selectedSerial, selectedOptions);
 
     if (selectedOption && onChange) {
+      //Additional key/value props needed for configuration file
       const modifiedSelectedOption = {
         ...selectedOption,
         categoryName: categoryName,

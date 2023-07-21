@@ -48,6 +48,7 @@ export default function Dropdown({
     const selectedOption = getSelectedOption(selectedSerial, choices);
 
     if (selectedOption && onChange) {
+      //Additional key/value props needed for configuration file
       const modifiedSelectedOption = {
         ...selectedOption,
         categoryName: categoryName,

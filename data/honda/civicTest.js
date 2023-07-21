@@ -208,6 +208,20 @@ const CivicData = [
         descendent: ["tt1", "tt2", "tt3", "tt4", "tt5"],
       },
       {
+        name: "Test External Access 1",
+        price: 322,
+        serial: "ea10",
+        descendent: ["tt1", "tt2", "tt3", "tt4", "tt5"],
+        action: { rivals: ["ea11"] },
+      },
+      {
+        name: "Test External Access 2",
+        price: 322,
+        serial: "ea11",
+        descendent: ["tt1", "tt2", "tt3", "tt4", "tt5"],
+        action: { rivals: ["ea10"] },
+      },
+      {
         name: "Generic EA 4",
         price: 322,
         serial: "ea4",

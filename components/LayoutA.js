@@ -48,7 +48,6 @@ export default function LayoutA({ selectedMake, selectedModel }) {
           state,
           selectedOption
         );
-
         dispatch({
           type: "OPTION_CHANGE",
           payload: updatedChoices,

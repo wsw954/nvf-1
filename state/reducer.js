@@ -12,16 +12,16 @@ export function reducer(state, action) {
     case ACTIONS.OPTION_CHANGE:
       return {
         ...state,
-        availableChoices: action.payload.availableChoices,
-        selectedChoices: action.payload.selectedChoices,
-        popup: action.payload.popup,
+        availableChoices: [...action.payload.availableChoices],
+        selectedChoices: [...action.payload.selectedChoices],
+        popup: { ...action.payload.popup },
       };
     case ACTIONS.POPUP_CONFIRM:
       return {
         ...state,
-        availableChoices: action.payload.availableChoices,
-        selectedChoices: action.payload.selectedChoices,
-        popup: action.payload.popup,
+        availableChoices: [...action.payload.availableChoices],
+        selectedChoices: [...action.payload.selectedChoices],
+        popup: { ...action.payload.popup },
       };
     case ACTIONS.POPUP_CANCEL:
       return {
