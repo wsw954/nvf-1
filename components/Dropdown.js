@@ -27,20 +27,22 @@ export default function Dropdown({
     );
   };
 
-  const hasPackageID = (currentSelectedOption) => {
-    return currentSelectedOption && "packageID" in currentSelectedOption;
+  const hasPackageComponent = (currentSelectedOption) => {
+    return currentSelectedOption && "packageComponent" in currentSelectedOption;
   };
 
-  const getInputName = (choiceName, hasPackageID) => {
-    return hasPackageID ? `${choiceName}-Included in Package` : choiceName;
+  const getInputName = (choiceName, hasPackageComponent) => {
+    return hasPackageComponent
+      ? `${choiceName}-Included in Package`
+      : choiceName;
   };
 
   const getDisplayPrice = (
     currentSelectedOption,
     choicePrice,
-    hasPackageID
+    hasPackageComponent
   ) => {
-    return hasPackageID ? currentSelectedOption.price : choicePrice;
+    return hasPackageComponent ? currentSelectedOption.price : choicePrice;
   };
 
   const handleDropdownChange = (event) => {
@@ -83,7 +85,7 @@ export default function Dropdown({
         <option value="">Select {categoryName}</option>
         {choices.map((choice, index) => {
           const currentSelectedOption = getCurrentSelectedOption(choice.serial);
-          const hasPackageIDValue = hasPackageID(currentSelectedOption);
+          const hasPackageIDValue = hasPackageComponent(currentSelectedOption);
           const inputName = getInputName(choice.name, hasPackageIDValue);
           const displayPriceValue = getDisplayPrice(
             currentSelectedOption,

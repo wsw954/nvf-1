@@ -9,7 +9,7 @@ export default function LayoutA({ selectedMake, selectedModel }) {
     popup: {
       visible: false,
       message: "",
-      selectedOption: null,
+      confirmAction: null,
     },
   };
 
@@ -111,8 +111,8 @@ export default function LayoutA({ selectedMake, selectedModel }) {
       {state.popup.visible && (
         <Popup
           message={state.popup.message}
-          confirmAction={() => handlePopupConfirm(state.popup.selectedOption)}
-          cancelAction={() => handlePopupCancel(state.popup.selectedOption)}
+          confirmAction={() => handlePopupConfirm(state.popup.confirmAction)}
+          cancelAction={() => handlePopupCancel(state.popup.confirmAction)}
         />
       )}
     </div>

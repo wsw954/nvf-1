@@ -15,8 +15,8 @@ export default function CheckBoxGroup({
       (selectedOption) => selectedOption.serial === selectedSerial
     );
 
-    if (unselectedOption && "packageID" in unselectedOption) {
-      return unselectedOption.packageID;
+    if (unselectedOption && "packageComponent" in unselectedOption) {
+      return unselectedOption.packageComponent;
     }
 
     return null;
@@ -48,7 +48,7 @@ export default function CheckBoxGroup({
     const isChecked = event.target.checked;
     const selectedSerial = event.target.value;
     const selectedOption = getSelectedOption(selectedSerial, choices);
-    let packageID = isChecked
+    let packageComponent = isChecked
       ? null
       : getUnselectedOptionPackageId(selectedSerial, selectedOptions);
 
@@ -59,7 +59,7 @@ export default function CheckBoxGroup({
         categoryName: categoryName,
         type: "CheckBoxGroup",
         checked: isChecked,
-        ...(packageID && { packageID: packageID }),
+        ...(packageComponent && { packageComponent: packageComponent }),
       };
       onChange(modifiedSelectedOption);
     }
