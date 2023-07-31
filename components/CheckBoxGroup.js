@@ -10,6 +10,7 @@ export default function CheckBoxGroup({
     return choices.find((option) => option.serial === selectedSerial);
   };
 
+  //This function checks if an unchecked option is a packageComponent
   const getUnselectedOptionPackageId = (selectedSerial, selectedOptions) => {
     const unselectedOption = selectedOptions.find(
       (selectedOption) => selectedOption.serial === selectedSerial
@@ -29,7 +30,7 @@ export default function CheckBoxGroup({
   };
 
   const hasPackageID = (currentSelectedOption) => {
-    return currentSelectedOption && "packageID" in currentSelectedOption;
+    return currentSelectedOption && "packageComponent" in currentSelectedOption;
   };
 
   const getInputName = (choiceName, hasPackageID) => {
