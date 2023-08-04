@@ -90,11 +90,10 @@ export function handlePopupConfirm(state, confirmAction) {
         confirmAction
       );
       break;
-    case "parentSelected":
-      console.log("parentSelected");
-      break;
-    case "childUnselected":
-      console.log("childUnselected");
+    case "parentUnselected":
+      console.log("parentUnselected");
+    case "childSelected":
+      updatedState = childSelectedConfirm(updatedState, confirmAction);
       break;
   }
   // Reset popup property before returning updated state
@@ -109,12 +108,8 @@ export function handlePopupConfirm(state, confirmAction) {
 //Helper function
 function rivalSelectConfirm(state, confirmAction) {
   let updatedState = { ...state };
-  const {
-    addToSelectedChoices = [],
-    removeFromSelectedChoices = [],
-    addToAvailableChoices = [],
-    removeFromAvailableChoices = [],
-  } = confirmAction;
+  const { addToSelectedChoices = [], removeFromSelectedChoices = [] } =
+    confirmAction;
   //Remove the unselected rival first
   if (removeFromSelectedChoices.length > 0) {
     removeFromSelectedChoices.forEach((rivalUnselected) => {
@@ -162,12 +157,8 @@ function rivalSelectConfirm(state, confirmAction) {
 
 function packageComponentUnselectConfirm(state, confirmAction) {
   let updatedState = { ...state };
-  const {
-    addToSelectedChoices = [],
-    removeFromSelectedChoices = [],
-    addToAvailableChoices = [],
-    removeFromAvailableChoices = [],
-  } = confirmAction;
+  const { addToSelectedChoices = [], removeFromSelectedChoices = [] } =
+    confirmAction;
   //First remove the
   if (removeFromSelectedChoices.length > 0) {
     removeFromSelectedChoices.forEach((option) => {
@@ -191,33 +182,19 @@ function packageComponentUnselectConfirm(state, confirmAction) {
   return updatedState;
 }
 
-// function handleUnselectRivals(state, rivals) {
-//   let updatedState = { ...state };
+function childSelectedConfirm(state, confirmAction) {
+  let updatedState = { ...state };
+  console.log(confirmAction);
+  const { addToSelectedChoices = [] } = confirmAction;
 
-//   return updatedState;
-// }
-// //Helper function
-// function handleUnselectingRivals(state, rivals) {
-//   let updatedState = { ...state };
-//   if (rivals) {
-//     for (let rival of rivals) {
-//       const rivalChoice = getOption(rival);
+  if (addToSelectedChoices.length > 0) {
+    addToSelectedChoices.forEach((choice) => {
+      updatedState = handleOptionChange(updatedState, choice);
+    });
+  }
 
-//       let modifiedRivalChoice = {
-//         ...rivalChoice[0].choices[0],
-//         categoryName: rivalChoice[0].categoryName,
-//       };
-//       updatedState = removeSelectedChoices(updatedState, modifiedRivalChoice);
-//       const { packageOption: rivalPackageOption = [] } =
-//         modifiedRivalChoice.action || {};
-//       if (rivalPackageOption.length > 0) {
-//         modifiedRivalChoice = { ...modifiedRivalChoice, checked: false };
-//         updatedState = handlePackageOption(updatedState, modifiedRivalChoice);
-//       }
-//     }
-//   }
-//   return updatedState;
-// }
+  return updatedState;
+}
 
 export function handlePopupCancel(state, confirmAction) {
   let updatedState = { ...state };
@@ -381,7 +358,11 @@ function handleParent(state, selectedOption) {
             selectedOption.name +
             " will also unselect:  " +
             allChoicesNames.join(", "),
-          selectedOption: modifiedSelectedOption,
+          confirmAction: {
+            caller: "parentUnselected",
+            addToSelectedChoices: [],
+            removeFromSelectedChoices: [selectedOption],
+          },
         },
       };
     }
@@ -394,12 +375,17 @@ function handleChild(state, selectedOption) {
   let updatedState = { ...state };
   const { action: { child = [] } = {}, checked } = selectedOption || {};
   if (checked) {
-    const parentStatus = checkIfOptionsSelected(updatedState, child);
-    if (parentStatus.isSelected) {
+    const parentStatus = checkIfAllOptionsSelected(updatedState, child);
+    if (parentStatus.allSelected) {
       updatedState = addSelectedChoices(updatedState, selectedOption);
     } else {
+      const parentsUnchecked = parentStatus.optionsAvailable.flatMap(
+        (item) => item.choices
+      );
+      const allParentNames = parentStatus.optionsAvailable.flatMap((option) =>
+        option.choices.map((choice) => choice.name)
+      );
       //Update the Popup
-      const parentOption = getOption(child);
       updatedState = {
         ...updatedState,
         popup: {
@@ -408,8 +394,12 @@ function handleChild(state, selectedOption) {
             "To Select " +
             selectedOption.name +
             " you must also select " +
-            parentOption[0].choices[0].name,
-          selectedOption: selectedOption,
+            allParentNames.join(", "),
+          confirmAction: {
+            caller: "childSelected",
+            addToSelectedChoices: [...parentsUnchecked, selectedOption],
+            removeFromSelectedChoices: [],
+          },
         },
       };
     }
@@ -563,6 +553,45 @@ function checkIfOptionsSelected(state, array) {
   return {
     isSelected,
     optionsSelected,
+  };
+}
+
+function checkIfAllOptionsSelected(state, array) {
+  const optionsSelected = state.selectedChoices
+    .map((item) => ({
+      ...item,
+      choices: item.choices.filter((choice) => array.includes(choice.serial)),
+    }))
+    .filter((item) => item.choices.length > 0);
+
+  let allSerials = [];
+  optionsSelected.forEach((item) => {
+    const serials = item.choices.map((choice) => choice.serial);
+    allSerials = [...allSerials, ...serials];
+  });
+
+  const uniqueSerials = [...new Set(allSerials)];
+  const allSelected = uniqueSerials.length === array.length;
+
+  let notFoundSerials = array.filter((item) => !uniqueSerials.includes(item));
+  const optionsAvailable = state.availableChoices
+    .map((item) => ({
+      ...item,
+      choices: item.choices
+        .filter((choice) => notFoundSerials.includes(choice.serial))
+        .map((choice) => ({
+          ...choice,
+          categoryName: item.categoryName,
+          checked: false,
+          type: item.component.name,
+        })),
+    }))
+    .filter((item) => item.choices.length > 0);
+
+  return {
+    allSelected,
+    optionsSelected,
+    optionsAvailable,
   };
 }
 
