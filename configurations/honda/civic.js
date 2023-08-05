@@ -36,6 +36,7 @@ export function handleOptionChange(state, selectedOption) {
 
   //Checks if an unselected option is a component of a selected package
   if (!checked || prevValue) {
+    console.log(selectedOption);
     if (isPackageComponent(selectedOption) || isPackageComponent(prevValue)) {
       //Unselecting an option with packageComponent can generate a popup
       return handlePackageComponent(state, selectedOption);
@@ -91,7 +92,8 @@ export function handlePopupConfirm(state, confirmAction) {
       );
       break;
     case "parentUnselected":
-      console.log("parentUnselected");
+      updatedState = parentsUncheckedConfirm(updatedState, confirmAction);
+      break;
     case "childSelected":
       updatedState = childSelectedConfirm(updatedState, confirmAction);
       break;
@@ -115,18 +117,18 @@ function rivalSelectConfirm(state, confirmAction) {
     removeFromSelectedChoices.forEach((rivalUnselected) => {
       //Mark rivalUnselected unselected, & remove rival property
       let modifiedRivalUnselected = { ...rivalUnselected, checked: false };
-      let { action: { packageOption, component } = {} } =
+      let { action: { packageOption, packageComponent } = {} } =
         modifiedRivalUnselected;
       if (packageOption && packageOption.length > 0) {
         updatedState = handlePackageOption(
           updatedState,
           modifiedRivalUnselected
         );
-      } else if (component && component.length > 0) {
-        // updatedState = handleRegularOptionChange(
-        //   updatedState,
-        //   modifiedRivalUnselected
-        // );
+      } else if (packageComponent && packageComponent.length > 0) {
+        updatedState = handleRegularOptionChange(
+          updatedState,
+          modifiedRivalUnselected
+        );
       } else {
         updatedState = handleRegularOptionChange(
           updatedState,
@@ -140,7 +142,7 @@ function rivalSelectConfirm(state, confirmAction) {
     addToSelectedChoices.forEach((rivalSelected) => {
       //Mark rivalSelected selected,
       let modifiedRivalSelected = { ...rivalSelected, checked: true };
-      let { action: { packageOption, component } = {} } = modifiedRivalSelected;
+      let { action: { packageOption } = {} } = modifiedRivalSelected;
       if (packageOption && packageOption.length > 0) {
         updatedState = handlePackageOption(updatedState, modifiedRivalSelected);
       } else {
@@ -182,14 +184,26 @@ function packageComponentUnselectConfirm(state, confirmAction) {
   return updatedState;
 }
 
+function parentsUncheckedConfirm(state, confirmAction) {
+  let updatedState = { ...state };
+  const { addToSelectedChoices = [], removeFromSelectedChoices = [] } =
+    confirmAction;
+  removeFromSelectedChoices.forEach((choice) => {
+    let modifiedChoice = { ...choice, checked: false };
+    updatedState = handleOptionChange(updatedState, modifiedChoice);
+  });
+
+  return updatedState;
+}
+
 function childSelectedConfirm(state, confirmAction) {
   let updatedState = { ...state };
-  console.log(confirmAction);
   const { addToSelectedChoices = [] } = confirmAction;
 
   if (addToSelectedChoices.length > 0) {
     addToSelectedChoices.forEach((choice) => {
-      updatedState = handleOptionChange(updatedState, choice);
+      let modifiedChoice = { ...choice, checked: true };
+      updatedState = handleOptionChange(updatedState, modifiedChoice);
     });
   }
 
@@ -198,6 +212,12 @@ function childSelectedConfirm(state, confirmAction) {
 
 export function handlePopupCancel(state, confirmAction) {
   let updatedState = { ...state };
+  // Reset popup property before returning updated state
+  updatedState.popup = {
+    visible: false,
+    message: "",
+    selectedOption: null,
+  };
 
   return updatedState;
 }
@@ -340,11 +360,10 @@ function handleParent(state, selectedOption) {
   } else {
     const childStatus = checkIfOptionsSelected(updatedState, parent);
     if (childStatus.isSelected) {
-      // Create a new selectedOption object including optionsSelected
-      const modifiedSelectedOption = {
-        ...selectedOption,
-        removeOptionsSelected: childStatus.optionsSelected,
-      };
+      const childOptions = childStatus.optionsSelected.flatMap(
+        (option) => option.choices
+      );
+
       // Gather all 'choices.name' for each object in 'optionsSelected'
       const allChoicesNames = childStatus.optionsSelected.flatMap((option) =>
         option.choices.map((choice) => choice.name)
@@ -361,7 +380,7 @@ function handleParent(state, selectedOption) {
           confirmAction: {
             caller: "parentUnselected",
             addToSelectedChoices: [],
-            removeFromSelectedChoices: [selectedOption],
+            removeFromSelectedChoices: [...childOptions, selectedOption],
           },
         },
       };
